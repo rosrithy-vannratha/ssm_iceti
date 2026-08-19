@@ -51,11 +51,14 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
   const [selectedClass, setSelectedClass] = useState<string>('all');
   const [selectedYear, setSelectedYear] = useState<string>('all');
   const [selectedMajor, setSelectedMajor] = useState<string>('all');
+  const [selectedStatus, setSelectedStatus] = useState<string>('all');
 
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(isAddModalOpen);
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
   const [isImporting, setIsImporting] = useState(false);
+  const [isDeleteAllModalOpen, setIsDeleteAllModalOpen] = useState(false);
+  const [isDeletingAll, setIsDeletingAll] = useState(false);
 
   // Form states
   const [formStudentCode, setFormStudentCode] = useState('');
@@ -83,7 +86,7 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
 
   const openAddModal = () => {
     setEditingStudent(null);
-    setFormStudentCode(`CPI-2025-${String(students.length + 1).padStart(3, '0')}`);
+    setFormStudentCode(`ICI-2025-${String(students.length + 1).padStart(3, '0')}`);
     setFormNameKhmer('');
     setFormNameLatin('');
     setFormNameChinese('');
@@ -125,6 +128,37 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
     setIsModalOpen(false);
     setEditingStudent(null);
     if (onCloseAddModal) onCloseAddModal();
+  };
+
+  const handleResetFilters = () => {
+    setSearch('');
+    setSelectedShift('all');
+    setSelectedClass('all');
+    setSelectedYear('all');
+    setSelectedMajor('all');
+    setSelectedStatus('all');
+  };
+
+  const activeFiltersCount = [
+    search.trim() !== '',
+    selectedShift !== 'all',
+    selectedClass !== 'all',
+    selectedYear !== 'all',
+    selectedMajor !== 'all',
+    selectedStatus !== 'all'
+  ].filter(Boolean).length;
+
+  const handleDeleteAllStudents = async () => {
+    setIsDeletingAll(true);
+    try {
+      await instituteService.deleteAllStudents();
+      showToast('បានលុបទិន្នន័យនិស្សិតទាំងអស់ដោយជោគជ័យ!', 'success');
+      setIsDeleteAllModalOpen(false);
+    } catch (e) {
+      showToast('មិនអាចលុបទិន្នន័យបានទេ', 'error');
+    } finally {
+      setIsDeletingAll(false);
+    }
   };
 
   const handleSaveStudent = async (e: React.FormEvent) => {
@@ -232,25 +266,62 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
   // Filtered Students
   const filteredStudents = useMemo(() => {
     return students.filter((s) => {
-      if (selectedShift !== 'all' && s.shift !== selectedShift) return false;
-      if (selectedClass !== 'all' && s.classId !== selectedClass) return false;
-      if (selectedYear !== 'all' && s.year !== selectedYear) return false;
-      if (selectedMajor !== 'all' && s.majorId !== selectedMajor) return false;
+      // 1. Shift filter
+      if (selectedShift !== 'all') {
+        const studentShift = (s.shift || '').toLowerCase();
+        if (studentShift !== selectedShift.toLowerCase()) return false;
+      }
 
+      // 2. Class filter (match by ID or class name)
+      if (selectedClass !== 'all') {
+        const targetClass = classes.find((c) => c.id === selectedClass);
+        const matchesId = s.classId === selectedClass;
+        const matchesName = targetClass && s.className === targetClass.name;
+        const matchesDirectName = s.className === selectedClass;
+        if (!matchesId && !matchesName && !matchesDirectName) return false;
+      }
+
+      // 3. Major filter (match by ID or major name)
+      if (selectedMajor !== 'all') {
+        const targetMajor = majors.find((m) => m.id === selectedMajor);
+        const matchesId = s.majorId === selectedMajor;
+        const matchesName = targetMajor && (s.majorName === targetMajor.nameKhmer || s.majorName === targetMajor.nameLatin);
+        const matchesDirectName = s.majorName === selectedMajor;
+        if (!matchesId && !matchesName && !matchesDirectName) return false;
+      }
+
+      // 4. Academic Year filter
+      if (selectedYear !== 'all') {
+        const studentYear = (s.year || '').toLowerCase();
+        const targetYear = selectedYear.toLowerCase();
+        if (!studentYear.includes(targetYear) && studentYear !== targetYear) return false;
+      }
+
+      // 5. Status filter
+      if (selectedStatus !== 'all') {
+        if (s.status !== selectedStatus) return false;
+      }
+
+      // 6. Search query
       if (search.trim()) {
-        const q = search.toLowerCase();
+        const q = search.toLowerCase().trim();
         const matchCode = (s.studentCode || '').toLowerCase().includes(q);
         const matchKhmer = (s.nameKhmer || '').toLowerCase().includes(q);
         const matchLatin = (s.nameLatin || '').toLowerCase().includes(q);
         const matchChinese = (s.nameChinese || '').toLowerCase().includes(q);
         const matchPhone = (s.phone || '').toLowerCase().includes(q);
-        if (!matchCode && !matchKhmer && !matchLatin && !matchChinese && !matchPhone) {
+        const matchGuardian = (s.guardianPhone || '').toLowerCase().includes(q);
+        const matchClass = (s.className || '').toLowerCase().includes(q);
+        const matchMajor = (s.majorName || '').toLowerCase().includes(q);
+
+        if (!matchCode && !matchKhmer && !matchLatin && !matchChinese && !matchPhone && !matchGuardian && !matchClass && !matchMajor) {
           return false;
         }
       }
+
       return true;
     });
-  }, [students, selectedShift, selectedClass, selectedYear, selectedMajor, search]);
+  }, [students, classes, majors, selectedShift, selectedClass, selectedMajor, selectedYear, selectedStatus, search]);
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
@@ -266,12 +337,23 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
             </h2>
           </div>
           <p className="text-xs text-zinc-500 mt-1">
-            ទិន្នន័យសរុប {students.length} នាក់ • ត្រូវតាមលក្ខខណ្ឌ Filter: {filteredStudents.length} នាក់
+            ទិន្នន័យសរុប {students.length} នាក់ • កំពុងបង្ហាញតាមតម្រង: {filteredStudents.length} នាក់
           </p>
         </div>
 
         {/* Actions */}
         <div className="flex flex-wrap items-center gap-2">
+          {/* Delete All Data */}
+          <button
+            onClick={() => setIsDeleteAllModalOpen(true)}
+            disabled={students.length === 0}
+            title="លុបទិន្នន័យនិស្សិតទាំងអស់"
+            className="px-3.5 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-semibold text-xs inline-flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+            <span>លុបទិន្នន័យទាំងអស់ (Delete All)</span>
+          </button>
+
           <label className="px-3.5 py-2 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-700 font-semibold text-xs inline-flex items-center gap-1.5 transition-colors cursor-pointer">
             <Upload className="w-3.5 h-3.5 text-zinc-600" />
             <span>{isImporting ? 'កំពុង Import...' : 'Import Excel'}</span>
@@ -312,15 +394,15 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
 
       {/* Filters & Search Control */}
       <div className="bg-white rounded-2xl p-4 border border-emerald-900/10 shadow-xs space-y-3">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
           {/* Search */}
-          <div className="relative lg:col-span-2">
+          <div className="relative sm:col-span-2 md:col-span-3 lg:col-span-2">
             <Search className="w-4 h-4 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="ស្វែងរកតាមឈ្មោះ, អត្តលេខ, ឬទូរស័ព្ទ..."
+              placeholder="ស្វែងរកតាមឈ្មោះ, អត្តលេខ, ទូរស័ព្ទ..."
               className="w-full pl-9 pr-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl text-xs focus:bg-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-hidden transition-all"
             />
             {search && (
@@ -333,18 +415,19 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
             )}
           </div>
 
-          {/* Shift Filter */}
+          {/* Major Filter */}
           <div>
             <select
-              value={selectedShift}
-              onChange={(e) => setSelectedShift(e.target.value)}
+              value={selectedMajor}
+              onChange={(e) => setSelectedMajor(e.target.value)}
               className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl text-xs text-zinc-700 focus:bg-white focus:border-emerald-500 outline-hidden cursor-pointer"
             >
-              <option value="all">គ្រប់វេនទាំងអស់ (All Shifts)</option>
-              <option value="morning">វេនព្រឹក (Morning)</option>
-              <option value="afternoon">វេនរសៀល (Afternoon)</option>
-              <option value="evening">វេនយប់ (Evening)</option>
-              <option value="weekend">ចុងសប្តាហ៍ (Weekend)</option>
+              <option value="all">ជំនាញទាំងអស់ (All Majors)</option>
+              {majors.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.nameKhmer}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -355,12 +438,27 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
               onChange={(e) => setSelectedClass(e.target.value)}
               className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl text-xs text-zinc-700 focus:bg-white focus:border-emerald-500 outline-hidden cursor-pointer"
             >
-              <option value="all">គ្រប់ថ្នាក់រៀន (All Classes)</option>
+              <option value="all">ថ្នាក់ទាំងអស់ (All Classes)</option>
               {classes.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name}
                 </option>
               ))}
+            </select>
+          </div>
+
+          {/* Shift Filter */}
+          <div>
+            <select
+              value={selectedShift}
+              onChange={(e) => setSelectedShift(e.target.value)}
+              className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl text-xs text-zinc-700 focus:bg-white focus:border-emerald-500 outline-hidden cursor-pointer"
+            >
+              <option value="all">វេនទាំងអស់ (All Shifts)</option>
+              <option value="morning">វេនព្រឹក (Morning)</option>
+              <option value="afternoon">វេនរសៀល (Afternoon)</option>
+              <option value="evening">វេនយប់ (Evening)</option>
+              <option value="weekend">ចុងសប្តាហ៍ (Weekend)</option>
             </select>
           </div>
 
@@ -371,14 +469,48 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
               onChange={(e) => setSelectedYear(e.target.value)}
               className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl text-xs text-zinc-700 focus:bg-white focus:border-emerald-500 outline-hidden cursor-pointer"
             >
-              <option value="all">គ្រប់ឆ្នាំសិក្សា (All Years)</option>
+              <option value="all">ឆ្នាំទាំងអស់ (All Years)</option>
               <option value="Year 1">ឆ្នាំទី១ (Year 1)</option>
               <option value="Year 2">ឆ្នាំទី២ (Year 2)</option>
               <option value="Year 3">ឆ្នាំទី៣ (Year 3)</option>
               <option value="Year 4">ឆ្នាំទី៤ (Year 4)</option>
             </select>
           </div>
+
+          {/* Status Filter */}
+          <div>
+            <select
+              value={selectedStatus}
+              onChange={(e) => setSelectedStatus(e.target.value)}
+              className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl text-xs text-zinc-700 focus:bg-white focus:border-emerald-500 outline-hidden cursor-pointer"
+            >
+              <option value="all">ស្ថានភាពទាំងអស់ (All Status)</option>
+              <option value="active">កំពុងរៀន (Active)</option>
+              <option value="suspended">ព្យួរការសិក្សា (Suspended)</option>
+              <option value="dropped">បោះបង់ (Dropped)</option>
+              <option value="graduated">បញ្ចប់ការសិក្សា (Graduated)</option>
+            </select>
+          </div>
         </div>
+
+        {/* Active Filters Bar & Reset */}
+        {activeFiltersCount > 0 && (
+          <div className="flex items-center justify-between pt-2 border-t border-zinc-100 text-xs">
+            <div className="flex items-center gap-2 text-emerald-800">
+              <Filter className="w-3.5 h-3.5 text-emerald-600" />
+              <span>
+                តម្រងសកម្ម: <strong className="font-semibold">{activeFiltersCount}</strong> លក្ខខណ្ឌ (រកឃើញ {filteredStudents.length} នាក់)
+              </span>
+            </div>
+            <button
+              onClick={handleResetFilters}
+              className="px-2.5 py-1 rounded-lg bg-zinc-100 hover:bg-zinc-200 text-zinc-700 font-medium text-xs inline-flex items-center gap-1 cursor-pointer transition-colors"
+            >
+              <X className="w-3 h-3" />
+              <span>សម្អាតតម្រងទាំងអស់ (Reset)</span>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Student Table */}
@@ -741,6 +873,61 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete All Confirmation Modal */}
+      {isDeleteAllModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-6 max-w-md w-full border border-rose-100 shadow-2xl space-y-4">
+            <div className="w-12 h-12 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center mx-auto">
+              <Trash2 className="w-6 h-6" />
+            </div>
+
+            <div className="text-center space-y-1">
+              <h3 className="text-lg font-bold text-zinc-900">
+                តើអ្នកពិតជាចង់លុបទិន្នន័យនិស្សិតទាំងអស់មែនទេ?
+              </h3>
+              <p className="text-xs text-zinc-500">
+                សកម្មភាពនេះនឹងលុបទិន្នន័យនិស្សិតទាំងអស់ចំនួន <strong className="text-rose-600 font-bold">{students.length} នាក់</strong> ចេញពីប្រព័ន្ធជាអចិន្ត្រៃយ៍ ហើយមិនអាចត្រឡប់ក្រោយបានឡើយ។
+              </p>
+            </div>
+
+            <div className="bg-rose-50 border border-rose-200 rounded-2xl p-3 text-xs text-rose-800 space-y-1">
+              <p className="font-bold flex items-center gap-1.5">
+                <span>⚠️ ការព្រមាន (Warning):</span>
+              </p>
+              <p className="text-[11px] leading-relaxed">
+                ទិន្នន័យទាំងអស់នៅក្នុងមូលដ្ឋានទិន្នន័យ (Cloud Firestore) នឹងត្រូវលុបចោលទាំងស្រុង។ សូមប្រាកដថាអ្នកបាន Export Excel រួចរាល់មុននឹងធ្វើការលុប។
+              </p>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setIsDeleteAllModalOpen(false)}
+                disabled={isDeletingAll}
+                className="flex-1 px-4 py-2.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-700 font-semibold text-xs transition-colors cursor-pointer"
+              >
+                បោះបង់ (Cancel)
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteAllStudents}
+                disabled={isDeletingAll}
+                className="flex-1 px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs transition-colors cursor-pointer flex items-center justify-center gap-1.5 shadow-sm disabled:opacity-50"
+              >
+                {isDeletingAll ? (
+                  <span>កំពុងលុប...</span>
+                ) : (
+                  <>
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>លុបទាំងអស់ (Confirm Delete)</span>
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       )}

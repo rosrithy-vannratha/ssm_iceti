@@ -25,6 +25,40 @@ export function exportStudentsToExcel(students: Student[], filename = 'student_l
   XLSX.writeFile(workbook, `${filename}_${new Date().toISOString().split('T')[0]}.xlsx`);
 }
 
+export function downloadStudentTemplate(): void {
+  const templateData = [
+    {
+      'Student Code': 'ICI-2025-101',
+      'Name Khmer': 'សាន វិចិត្រ',
+      'Name Latin': 'San Vichetr',
+      'Name Chinese': '桑维切',
+      'Gender': 'male', // male / female
+      'Date of Birth': '2004-01-15',
+      'Phone': '012345678',
+      'Shift': 'morning', // morning, afternoon, evening, weekend
+      'Year': 'Year 1', // Year 1, Year 2, Year 3, Year 4
+      'Guardian Phone': '098765432'
+    },
+    {
+      'Student Code': 'ICI-2025-102',
+      'Name Khmer': 'ហែម ចិន្តា',
+      'Name Latin': 'Hem Chenda',
+      'Name Chinese': '韩贞达',
+      'Gender': 'female',
+      'Date of Birth': '2004-06-20',
+      'Phone': '098112233',
+      'Shift': 'evening',
+      'Year': 'Year 1',
+      'Guardian Phone': '011223344'
+    }
+  ];
+
+  const worksheet = XLSX.utils.json_to_sheet(templateData);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Template');
+  XLSX.writeFile(workbook, 'ICI_Student_Import_Template.xlsx');
+}
+
 export function exportAttendanceToExcel(records: AttendanceRecord[], className: string, date: string): void {
   const formattedData = records.map((r, index) => ({
     'ល.រ (No)': index + 1,
@@ -41,38 +75,104 @@ export function exportAttendanceToExcel(records: AttendanceRecord[], className: 
   XLSX.writeFile(workbook, `Attendance_${className.replace(/\s+/g, '_')}_${date}.xlsx`);
 }
 
-export function downloadStudentTemplate(): void {
+export function exportTeachersToExcel(teachers: Teacher[], filename = 'teacher_faculty_list'): void {
+  const formattedData = teachers.map((t, index) => ({
+    'ល.រ (No)': index + 1,
+    'អត្តលេខ (ID)': t.teacherCode,
+    'គោត្តនាម-នាម (Khmer)': t.nameKhmer,
+    'អក្សរឡាតាំង (Latin)': t.nameLatin,
+    'ភេទ (Gender)': t.gender === 'female' ? 'ស្រី (F)' : 'ប្រុស (M)',
+    'លេខទូរស័ព្ទ (Phone)': t.phone || '-',
+    'អ៊ីមែល (Email)': t.email || '-',
+    'មុខវិជ្ជាបង្រៀន (Subjects)': t.subjects,
+    'វេនបង្រៀន (Shift)': getShiftLabel(String(t.shift || 'morning')),
+    'ស្ថានភាព (Status)': getTeacherStatusLabel(t.status),
+  }));
+
+  const worksheet = XLSX.utils.json_to_sheet(formattedData);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Faculty');
+  XLSX.writeFile(workbook, `${filename}_${new Date().toISOString().split('T')[0]}.xlsx`);
+}
+
+export function downloadTeacherTemplate(): void {
   const templateData = [
     {
-      'Student Code': 'CPI-2025-101',
-      'Name Khmer': 'សាន វិចិត្រ',
-      'Name Latin': 'San Vichetr',
-      'Name Chinese': '桑维切',
+      'Teacher Code': 'ICI-TCH-001',
+      'Name Khmer': 'សាស្ត្រាចារ្យ ឡុង សុខា',
+      'Name Latin': 'Long Sokha',
       'Gender': 'male', // male / female
-      'Date of Birth': '2004-01-15',
       'Phone': '012345678',
+      'Email': 'longsokha@ici.edu.kh',
+      'Subjects': 'គរុកោសល្យទូទៅ, វេយ្យាករណ៍ភាសាចិន',
       'Shift': 'morning', // morning, afternoon, evening, weekend
-      'Year': 'Year 1', // Year 1, Year 2, Year 3, Year 4
-      'Guardian Phone': '098765432'
+      'Status': 'active' // active, on_leave, resigned
     },
     {
-      'Student Code': 'CPI-2025-102',
-      'Name Khmer': 'ហែម ចិន្តា',
-      'Name Latin': 'Hem Chenda',
-      'Name Chinese': '韩贞达',
+      'Teacher Code': 'ICI-TCH-002',
+      'Name Khmer': 'សាស្ត្រាចារ្យ ចេង វ៉ាន់នី',
+      'Name Latin': 'Cheng Vanny',
       'Gender': 'female',
-      'Date of Birth': '2004-06-20',
       'Phone': '098112233',
+      'Email': 'chengvanny@ici.edu.kh',
+      'Subjects': 'វិធីសាស្ត្របង្រៀនភាសាចិន (Pedagogy Methodology)',
       'Shift': 'evening',
-      'Year': 'Year 1',
-      'Guardian Phone': '011223344'
+      'Status': 'active'
     }
   ];
 
   const worksheet = XLSX.utils.json_to_sheet(templateData);
   const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, 'Template');
-  XLSX.writeFile(workbook, 'CPI_Student_Import_Template.xlsx');
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'FacultyTemplate');
+  XLSX.writeFile(workbook, 'ICI_Faculty_Import_Template.xlsx');
+}
+
+export function parseTeacherExcel(file: File): Promise<Partial<Teacher>[]> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = new Uint8Array(e.target?.result as ArrayBuffer);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+        const rawJson: any[] = XLSX.utils.sheet_to_json(firstSheet);
+
+        const parsedTeachers: Partial<Teacher>[] = rawJson.map((row) => ({
+          teacherCode: String(row['Teacher Code'] || row['អត្តលេខ'] || `ICI-TCH-${Date.now().toString().slice(-4)}`),
+          nameKhmer: String(row['Name Khmer'] || row['ឈ្មោះខ្មែរ'] || row['គោត្តនាម-នាម'] || ''),
+          nameLatin: String(row['Name Latin'] || row['អក្សរឡាតាំង'] || ''),
+          gender: String(row['Gender'] || row['ភេទ'] || '').toLowerCase().includes('f') || String(row['Gender'] || row['ភេទ'] || '').includes('ស្រី') ? 'female' : 'male',
+          phone: String(row['Phone'] || row['លេខទូរស័ព្ទ'] || ''),
+          email: String(row['Email'] || row['អ៊ីមែល'] || ''),
+          subjects: String(row['Subjects'] || row['មុខវិជ្ជា'] || row['មុខវិជ្ជាបង្រៀន'] || 'ភាសាចិន'),
+          shift: parseShift(row['Shift'] || row['វេន'] || row['វេនបង្រៀន']),
+          status: parseTeacherStatus(row['Status'] || row['ស្ថានភាព'])
+        }));
+
+        resolve(parsedTeachers.filter((t) => Boolean(t.nameKhmer)));
+      } catch (err) {
+        reject(err);
+      }
+    };
+    reader.onerror = reject;
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+export function getTeacherStatusLabel(status: string): string {
+  switch (status) {
+    case 'active': return 'កំពុងបង្រៀន (Active)';
+    case 'on_leave': return 'សុំច្បាប់សម្រាក (On Leave)';
+    case 'resigned': return 'ឈប់បង្រៀន (Resigned)';
+    default: return status || 'កំពុងបង្រៀន';
+  }
+}
+
+function parseTeacherStatus(val: any): 'active' | 'on_leave' | 'resigned' {
+  const str = String(val || '').toLowerCase();
+  if (str.includes('leave') || str.includes('សម្រាក')) return 'on_leave';
+  if (str.includes('resign') || str.includes('ឈប់')) return 'resigned';
+  return 'active';
 }
 
 export function parseStudentExcel(file: File): Promise<Partial<Student>[]> {

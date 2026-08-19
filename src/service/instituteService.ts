@@ -147,7 +147,17 @@ export const instituteService = {
       collection(db, 'majors'),
       (snap) => {
         if (!snap.empty) {
-          const list = snap.docs.map((d) => d.data() as Major);
+          const list = snap.docs.map((d) => {
+            const data = d.data();
+            return {
+              id: d.id,
+              nameKhmer: data.nameKhmer || 'ជំនាញភាសាចិន',
+              nameLatin: data.nameLatin || '',
+              code: data.code || 'CH-01',
+              description: data.description || '',
+              totalYears: typeof data.totalYears === 'number' ? data.totalYears : (data.durationYears || 4)
+            } as Major;
+          });
           setLocal(LS_KEYS.MAJORS, list);
           callback(list);
         }
@@ -192,7 +202,23 @@ export const instituteService = {
       collection(db, 'classes'),
       (snap) => {
         if (!snap.empty) {
-          const list = snap.docs.map((d) => d.data() as Classroom);
+          const list = snap.docs.map((d) => {
+            const data = d.data();
+            return {
+              id: d.id,
+              classCode: data.classCode || data.code || 'CLS-01',
+              name: data.name || 'ថ្នាក់រៀន',
+              majorId: data.majorId || 'maj_pedagogy',
+              majorName: data.majorName || 'គរុកោសល្យភាសាចិន',
+              year: data.year || 'Year 1',
+              shift: data.shift || 'morning',
+              room: data.room || data.roomNumber || 'បន្ទប់ A101',
+              academicYear: data.academicYear || '2025-2026',
+              teacherId: data.teacherId || undefined,
+              teacherName: data.teacherName || undefined,
+              createdAt: data.createdAt || new Date().toISOString()
+            } as Classroom;
+          });
           setLocal(LS_KEYS.CLASSES, list);
           callback(list);
         }
@@ -255,6 +281,9 @@ export const instituteService = {
           });
           setLocal(LS_KEYS.TEACHERS, list);
           callback(list);
+        } else {
+          setLocal(LS_KEYS.TEACHERS, []);
+          callback([]);
         }
       },
       (err) => {
@@ -277,6 +306,24 @@ export const instituteService = {
     }
   },
 
+  async saveTeachersBulk(teachers: Teacher[]): Promise<void> {
+    const local = getLocal<Teacher>(LS_KEYS.TEACHERS, INITIAL_TEACHERS);
+    const map = new Map(local.map((t) => [t.id, t]));
+    for (const t of teachers) map.set(t.id, t);
+    const merged = Array.from(map.values());
+    setLocal(LS_KEYS.TEACHERS, merged);
+
+    try {
+      const batch = writeBatch(db);
+      for (const t of teachers) {
+        batch.set(doc(db, 'teachers', t.id), t);
+      }
+      await batch.commit();
+    } catch (e) {
+      console.warn('Error saving bulk teachers:', e);
+    }
+  },
+
   async deleteTeacher(id: string): Promise<void> {
     const local = getLocal<Teacher>(LS_KEYS.TEACHERS, INITIAL_TEACHERS).filter((t) => t.id !== id);
     setLocal(LS_KEYS.TEACHERS, local);
@@ -285,6 +332,21 @@ export const instituteService = {
       await deleteDoc(doc(db, 'teachers', id));
     } catch (e) {
       console.warn('Error deleting teacher:', e);
+    }
+  },
+
+  async deleteAllTeachers(): Promise<void> {
+    setLocal(LS_KEYS.TEACHERS, []);
+
+    try {
+      const snap = await getDocs(collection(db, 'teachers'));
+      if (!snap.empty) {
+        const batch = writeBatch(db);
+        snap.docs.forEach((d) => batch.delete(d.ref));
+        await batch.commit();
+      }
+    } catch (e) {
+      console.warn('Error deleting all teachers:', e);
     }
   },
 
@@ -324,6 +386,10 @@ export const instituteService = {
           });
           setLocal(LS_KEYS.STUDENTS, list);
           callback(list);
+        } else {
+          // Empty snapshot means collection was cleared
+          setLocal(LS_KEYS.STUDENTS, []);
+          callback([]);
         }
       },
       (err) => {
@@ -375,6 +441,21 @@ export const instituteService = {
     }
   },
 
+  async deleteAllStudents(): Promise<void> {
+    setLocal(LS_KEYS.STUDENTS, []);
+
+    try {
+      const snap = await getDocs(collection(db, 'students'));
+      if (!snap.empty) {
+        const batch = writeBatch(db);
+        snap.docs.forEach((d) => batch.delete(d.ref));
+        await batch.commit();
+      }
+    } catch (e) {
+      console.warn('Error deleting all students:', e);
+    }
+  },
+
   // --- ATTENDANCE ---
   subscribeAttendance(callback: (data: AttendanceRecord[]) => void): Unsubscribe {
     const local = getLocal<AttendanceRecord>(LS_KEYS.ATTENDANCE, INITIAL_ATTENDANCE);
@@ -384,7 +465,20 @@ export const instituteService = {
       collection(db, 'attendance'),
       (snap) => {
         if (!snap.empty) {
-          const list = snap.docs.map((d) => d.data() as AttendanceRecord);
+          const list = snap.docs.map((d) => {
+            const data = d.data();
+            return {
+              id: d.id,
+              date: data.date || new Date().toISOString().split('T')[0],
+              classId: data.classId || '',
+              shift: data.shift || 'morning',
+              studentId: data.studentId || '',
+              studentName: data.studentName || 'និស្សិត',
+              status: data.status || 'present',
+              note: data.note || undefined,
+              createdAt: data.createdAt || new Date().toISOString()
+            } as AttendanceRecord;
+          });
           setLocal(LS_KEYS.ATTENDANCE, list);
           callback(list);
         }
@@ -422,7 +516,20 @@ export const instituteService = {
       collection(db, 'teacher_attendance'),
       (snap) => {
         if (!snap.empty) {
-          const list = snap.docs.map((d) => d.data() as TeacherAttendance);
+          const list = snap.docs.map((d) => {
+            const data = d.data();
+            return {
+              id: d.id,
+              date: data.date || new Date().toISOString().split('T')[0],
+              teacherId: data.teacherId || '',
+              teacherName: data.teacherName || 'សាស្ត្រាចារ្យ',
+              shift: data.shift || 'morning',
+              subject: data.subject || 'ភាសាចិន',
+              status: data.status || 'present',
+              note: data.note || undefined,
+              createdAt: data.createdAt || new Date().toISOString()
+            } as TeacherAttendance;
+          });
           setLocal(LS_KEYS.TEACHER_ATT, list);
           callback(list);
         }

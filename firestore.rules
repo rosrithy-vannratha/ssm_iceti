@@ -26,38 +26,32 @@ service cloud.firestore {
 
     // Students collection
     match /students/{studentId} {
-      allow read: if true;
-      allow write: if isSignedIn();
+      allow read, write: if true;
     }
 
     // Teachers collection
     match /teachers/{teacherId} {
-      allow read: if true;
-      allow write: if isSignedIn();
+      allow read, write: if true;
     }
 
     // Classes collection
     match /classes/{classId} {
-      allow read: if true;
-      allow write: if isSignedIn();
+      allow read, write: if true;
     }
 
     // Majors collection
     match /majors/{majorId} {
-      allow read: if true;
-      allow write: if isSignedIn();
+      allow read, write: if true;
     }
 
     // Student Attendance collection
     match /attendance/{attendanceId} {
-      allow read: if true;
-      allow write: if isSignedIn();
+      allow read, write: if true;
     }
 
     // Teacher Attendance collection
     match /teacher_attendance/{id} {
-      allow read: if true;
-      allow write: if isSignedIn();
+      allow read, write: if true;
     }
   }
 }
