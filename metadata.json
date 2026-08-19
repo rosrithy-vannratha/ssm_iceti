@@ -1,0 +1,8 @@
+{
+  "name": "Chinese Pedagogical Institute Management",
+  "description": "Student & Attendance Management System for Chinese Pedagogical Institute (វិទ្យាស្ថានគរុកោសល្យភាសាចិន) with Firestore sync, shift management, attendance tracking, and AI reports.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

@@ -1,0 +1,149 @@
+{
+  "entities": {
+    "Student": {
+      "title": "Student",
+      "description": "Institute student profile and academic enrollment information",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "studentCode": { "type": "string" },
+        "nameKhmer": { "type": "string" },
+        "nameLatin": { "type": "string" },
+        "nameChinese": { "type": "string" },
+        "gender": { "type": "string", "enum": ["male", "female"] },
+        "dob": { "type": "string" },
+        "phone": { "type": "string" },
+        "email": { "type": "string" },
+        "majorId": { "type": "string" },
+        "majorName": { "type": "string" },
+        "classId": { "type": "string" },
+        "className": { "type": "string" },
+        "shift": { "type": "string", "enum": ["morning", "afternoon", "evening", "weekend"] },
+        "year": { "type": "string", "enum": ["Year 1", "Year 2", "Year 3", "Year 4"] },
+        "status": { "type": "string", "enum": ["active", "suspended", "dropped", "graduated"] },
+        "photoUrl": { "type": "string" },
+        "address": { "type": "string" },
+        "guardianPhone": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "studentCode", "nameKhmer", "gender", "shift", "year", "status"]
+    },
+    "Teacher": {
+      "title": "Teacher",
+      "description": "Faculty and instructors at the institute",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "teacherCode": { "type": "string" },
+        "nameKhmer": { "type": "string" },
+        "nameLatin": { "type": "string" },
+        "gender": { "type": "string", "enum": ["male", "female"] },
+        "phone": { "type": "string" },
+        "email": { "type": "string" },
+        "subjects": { "type": "string" },
+        "shift": { "type": "string" },
+        "status": { "type": "string", "enum": ["active", "on_leave", "resigned"] },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "teacherCode", "nameKhmer", "gender", "status"]
+    },
+    "Classroom": {
+      "title": "Classroom",
+      "description": "Academic classrooms organized by major, year, and shift",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "classCode": { "type": "string" },
+        "name": { "type": "string" },
+        "majorId": { "type": "string" },
+        "majorName": { "type": "string" },
+        "year": { "type": "string", "enum": ["Year 1", "Year 2", "Year 3", "Year 4"] },
+        "shift": { "type": "string", "enum": ["morning", "afternoon", "evening", "weekend"] },
+        "room": { "type": "string" },
+        "academicYear": { "type": "string" },
+        "teacherId": { "type": "string" },
+        "teacherName": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "classCode", "name", "shift", "year"]
+    },
+    "Major": {
+      "title": "Major",
+      "description": "Institute academic department / major program",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "code": { "type": "string" },
+        "nameKhmer": { "type": "string" },
+        "nameLatin": { "type": "string" },
+        "description": { "type": "string" },
+        "totalYears": { "type": "number" }
+      },
+      "required": ["id", "code", "nameKhmer"]
+    },
+    "AttendanceRecord": {
+      "title": "AttendanceRecord",
+      "description": "Student daily attendance log",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "date": { "type": "string" },
+        "classId": { "type": "string" },
+        "shift": { "type": "string" },
+        "studentId": { "type": "string" },
+        "studentName": { "type": "string" },
+        "status": { "type": "string", "enum": ["present", "permission", "absent", "late"] },
+        "note": { "type": "string" },
+        "recordedBy": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "date", "classId", "studentId", "status"]
+    },
+    "TeacherAttendance": {
+      "title": "TeacherAttendance",
+      "description": "Teacher attendance log",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "date": { "type": "string" },
+        "teacherId": { "type": "string" },
+        "teacherName": { "type": "string" },
+        "shift": { "type": "string" },
+        "subject": { "type": "string" },
+        "room": { "type": "string" },
+        "status": { "type": "string", "enum": ["present", "permission", "absent", "substituted"] },
+        "note": { "type": "string" },
+        "recordedBy": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "date", "teacherId", "status"]
+    }
+  },
+  "firestore": {
+    "/students/{studentId}": {
+      "schema": "Student",
+      "description": "All student records"
+    },
+    "/teachers/{teacherId}": {
+      "schema": "Teacher",
+      "description": "All faculty and teacher records"
+    },
+    "/classes/{classId}": {
+      "schema": "Classroom",
+      "description": "Classrooms and batches"
+    },
+    "/majors/{majorId}": {
+      "schema": "Major",
+      "description": "Academic majors"
+    },
+    "/attendance/{attendanceId}": {
+      "schema": "AttendanceRecord",
+      "description": "Student attendance entries"
+    },
+    "/teacher_attendance/{id}": {
+      "schema": "TeacherAttendance",
+      "description": "Teacher attendance logs"
+    }
+  }
+}

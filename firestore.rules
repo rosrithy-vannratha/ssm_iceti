@@ -1,0 +1,63 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Default safety catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Test connection doc
+    match /test/{docId} {
+      allow read, write: if true;
+    }
+
+    // User profiles & user tasks
+    match /users/{userId} {
+      allow get, list, write: if isSignedIn();
+      match /{allSubcollections=**} {
+        allow read, write: if isSignedIn();
+      }
+    }
+
+    // Students collection
+    match /students/{studentId} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    // Teachers collection
+    match /teachers/{teacherId} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    // Classes collection
+    match /classes/{classId} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    // Majors collection
+    match /majors/{majorId} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    // Student Attendance collection
+    match /attendance/{attendanceId} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    // Teacher Attendance collection
+    match /teacher_attendance/{id} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+  }
+}
