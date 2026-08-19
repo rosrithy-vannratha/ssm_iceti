@@ -57,8 +57,8 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
             <div>
               <h1 className="font-bold text-sm tracking-wide text-white flex items-center gap-2">
-                <span>វិទ្យាស្ថានគរុកោសល្យភាសាចិន</span>
-                <span className="text-[11px] font-normal text-emerald-200/90 hidden md:inline">| Chinese Pedagogical Institute</span>
+                <span>វិទ្យាស្ថានគរុកោសល្យភាសាចិនក្នុងតំបន់</span>
+                <span className="text-[11px] font-normal text-emerald-200/90 hidden md:inline">| International Chinese Education and Teachers Institute</span>
               </h1>
               <p className="text-[10.5px] text-emerald-200/80 hidden sm:block">
                 ប្រព័ន្ធគ្រប់គ្រងនិស្សិត ថ្នាក់រៀន វេនសិក្សា និងកត់ត្រាវត្តមានឆ្លាតវៃ

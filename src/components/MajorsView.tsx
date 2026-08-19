@@ -146,7 +146,7 @@ export const MajorsView: React.FC<MajorsViewProps> = ({
                 </div>
 
                 <p className="text-xs text-zinc-600 leading-relaxed py-3 border-y border-zinc-100">
-                  {maj.description || 'កម្មវិធីសិក្សាស្តង់ដារវិទ្យាស្ថានគរុកោសល្យភាសាចិន'}
+                  {maj.description || 'កម្មវិធីសិក្សាស្តង់ដារវិទ្យាស្ថានគរុកោសល្យភាសាចិនក្នុងតំបន់'}
                 </p>
               </div>
 

@@ -531,7 +531,7 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
                     {editingStudent ? 'កែប្រែព័ត៌មាននិស្សិត' : 'ចុះឈ្មោះនិស្សិតថ្មី (New Student)'}
                   </h3>
                   <p className="text-xs text-zinc-500">
-                    វិទ្យាស្ថានគរុកោសល្យភាសាចិន (Chinese Pedagogical Institute)
+                    វិទ្យាស្ថានគរុកោសល្យភាសាចិនក្នុងតំបន់ (International Chinese Education and Teachers Institute)
                   </p>
                 </div>
               </div>

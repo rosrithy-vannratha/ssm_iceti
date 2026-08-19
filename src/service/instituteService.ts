@@ -106,7 +106,7 @@ export const instituteService = {
     try {
       const snap = await getDocs(collection(db, 'majors'));
       if (snap.empty) {
-        console.log('Seeding initial Chinese Pedagogical Institute database...');
+        console.log('Seeding initial International Chinese Education and Teachers Institute database...');
         const batch = writeBatch(db);
 
         // Seed majors

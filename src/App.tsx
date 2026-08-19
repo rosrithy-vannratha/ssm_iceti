@@ -111,7 +111,7 @@ export default function App() {
           <div className="w-12 h-12 rounded-2xl bg-emerald-700 flex items-center justify-center text-white shadow-md animate-pulse">
             <GraduationCap className="w-6 h-6" />
           </div>
-          <p className="text-xs font-bold text-zinc-500">កំពុងតភ្ជាប់វិទ្យាស្ថានគរុកោសល្យភាសាចិន...</p>
+          <p className="text-xs font-bold text-zinc-500">កំពុងតភ្ជាប់វិទ្យាស្ថានគរុកោសល្យភាសាចិនក្នុងតំបន់...</p>
         </div>
       </div>
     );
@@ -219,8 +219,8 @@ export default function App() {
       <footer className="border-t border-emerald-900/10 py-6 bg-white text-center text-xs text-zinc-500">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <span className="font-bold text-emerald-900">វិទ្យាស្ថានគរុកោសល្យភាសាចិន</span>
-            <span>&bull; Chinese Pedagogical Institute</span>
+            <span className="font-bold text-emerald-900">វិទ្យាស្ថានគរុកោសល្យភាសាចិនក្នុងតំបន់</span>
+            <span>&bull; International Chinese Education and Teachers Institute</span>
           </div>
           <p className="text-[11px] text-zinc-400">
             ប្រព័ន្ធគ្រប់គ្រងនិស្សិត ថ្នាក់រៀន វេនសិក្សា និងវត្តមានឌីជីថល &bull; រក្សាសិទ្ធិគ្រប់យ៉ាង ២០២៥-២០២៦

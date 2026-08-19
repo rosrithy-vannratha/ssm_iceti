@@ -84,7 +84,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       // Direct high-value analysis
       await new Promise((r) => setTimeout(r, 600));
       setAiInsight(
-        `📊 របាយការណ៍សង្ខេបពី AI Assistant (Chinese Pedagogical Institute):
+        `📊 របាយការណ៍សង្ខេបពី AI Assistant (International Chinese Education and Teachers Institute):
 • អត្រាវត្តមានសរុបប្រចាំថ្ងៃស្ថិតក្នុងកម្រិតល្អប្រសើរ ${attendanceRate}%។
 • វេនព្រឹក (Morning Shift) មានចំនួននិស្សិតច្រើនជាងគេ (${shiftCounts.morning} នាក់)។
 • មាននិស្សិតចំនួន ${riskStudents.length} នាក់ ដែលមានអវត្តមានច្រើន គួរធ្វើការតាមដាន និងចេញលិខិតក្រើនរំលឹក។
@@ -110,7 +110,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <span>ប្រព័ន្ធគ្រប់គ្រងអប់រំ និងវត្តមានឆ្នាំសិក្សា ២០២៥-២០២៦</span>
             </div>
             <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
-              សួស្តី! សូមស្វាគមន៍មកកាន់វិទ្យាស្ថានគរុកោសល្យភាសាចិន
+              សួស្តី! សូមស្វាគមន៍មកកាន់វិទ្យាស្ថានគរុកោសល្យភាសាចិនក្នុងតំបន់
             </h2>
             <p className="text-emerald-100/80 text-xs sm:text-sm max-w-2xl leading-relaxed">
               គ្រប់គ្រងទិន្នន័យនិស្សិត វេនសិក្សា (ព្រឹក/រសៀល/យប់/ចុងសប្តាហ៍) កត់ត្រាវត្តមានប្រចាំថ្ងៃ និងតាមដានរបាយការណ៍សិក្សាដោយស្វ័យប្រវត្តិ។

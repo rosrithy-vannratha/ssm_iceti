@@ -82,7 +82,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          title: `របាយការណ៍ស្ទង់មតិ និងស្ថិតិវត្តមាន វិទ្យាស្ថានគរុកោសល្យភាសាចិន`,
+          title: `របាយការណ៍ស្ទង់មតិ និងស្ថិតិវត្តមាន វិទ្យាស្ថានគរុកោសល្យភាសាចិនក្នុងតំបន់`,
           description: `និស្សិតសរុប ${totalStudents} នាក់ (ស្រី ${femaleStudents} នាក់, ប្រុស ${maleStudents} នាក់)។ វេនព្រឹក ${shiftStats.morning}, រសៀល ${shiftStats.afternoon}, យប់ ${shiftStats.evening}, ចុងសប្តាហ៍ ${shiftStats.weekend}។ សាស្ត្រាចារ្យ ${teachers.length} រូប។ ថ្នាក់រៀន ${classes.length}។ មាននិស្សិតប្រឈមអវត្តមាន ${highAbsenceStudents.length} នាក់។`
         })
       });
@@ -118,7 +118,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
 
   const fallbackReport = () => {
     setAiReport(
-      `📊 **របាយការណ៍វិភាគលម្អិត (Chinese Pedagogical Institute Report)**:\n\n` +
+      `📊 **របាយការណ៍វិភាគលម្អិត (International Chinese Education and Teachers Institute Report)**:\n\n` +
       `1. **ស្ថិតិនិស្សិត & សមាមាត្រយេនឌ័រ**:\n` +
       `   • និស្សិតសរុប: ${totalStudents} នាក់ (ស្រី ${femaleStudents} នាក់ = ${femaleRate}%, ប្រុស ${maleStudents} នាក់ = ${100 - femaleRate}%)\n` +
       `   • វេនព្រឹកមាននិស្សិតច្រើនជាងគេ (${shiftStats.morning} នាក់) បន្ទាប់មកគឺវេនរសៀល (${shiftStats.afternoon} នាក់)។\n\n` +
