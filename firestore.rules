@@ -53,5 +53,10 @@ service cloud.firestore {
     match /teacher_attendance/{id} {
       allow read, write: if true;
     }
+
+    // Full system backups collection
+    match /backups/{backupId} {
+      allow read, write: if true;
+    }
   }
 }

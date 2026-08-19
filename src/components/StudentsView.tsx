@@ -326,17 +326,17 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
       {/* Header Bar */}
-      <div className="bg-white rounded-3xl p-6 border border-emerald-900/10 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white dark:bg-[#131f1a] rounded-3xl p-6 border border-emerald-900/10 dark:border-emerald-800/30 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-sm">
-              <Users className="w-4 h-4 text-emerald-700" />
+            <span className="w-8 h-8 rounded-xl bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 flex items-center justify-center font-bold text-sm">
+              <Users className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
             </span>
-            <h2 className="text-xl font-bold text-zinc-900">
+            <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">
               បញ្ជីរាយនាមនិស្សិត (Students Directory)
             </h2>
           </div>
-          <p className="text-xs text-zinc-500 mt-1">
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
             ទិន្នន័យសរុប {students.length} នាក់ • កំពុងបង្ហាញតាមតម្រង: {filteredStudents.length} នាក់
           </p>
         </div>
@@ -348,14 +348,14 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
             onClick={() => setIsDeleteAllModalOpen(true)}
             disabled={students.length === 0}
             title="លុបទិន្នន័យនិស្សិតទាំងអស់"
-            className="px-3.5 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-semibold text-xs inline-flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-3.5 py-2 rounded-xl bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800/50 font-semibold text-xs inline-flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+            <Trash2 className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />
             <span>លុបទិន្នន័យទាំងអស់ (Delete All)</span>
           </button>
 
-          <label className="px-3.5 py-2 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-700 font-semibold text-xs inline-flex items-center gap-1.5 transition-colors cursor-pointer">
-            <Upload className="w-3.5 h-3.5 text-zinc-600" />
+          <label className="px-3.5 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 font-semibold text-xs inline-flex items-center gap-1.5 transition-colors cursor-pointer">
+            <Upload className="w-3.5 h-3.5 text-zinc-600 dark:text-zinc-400" />
             <span>{isImporting ? 'កំពុង Import...' : 'Import Excel'}</span>
             <input
               type="file"
@@ -368,16 +368,16 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
 
           <button
             onClick={() => exportStudentsToExcel(filteredStudents)}
-            className="px-3.5 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-semibold text-xs inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+            className="px-3.5 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 font-semibold text-xs inline-flex items-center gap-1.5 transition-colors cursor-pointer"
           >
-            <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
+            <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
             <span>Export Excel ({filteredStudents.length})</span>
           </button>
 
           <button
             onClick={downloadStudentTemplate}
             title="ទាញយកគំរូ Excel"
-            className="p-2 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-600 transition-colors cursor-pointer"
+            className="p-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-300 transition-colors cursor-pointer"
           >
             <Download className="w-4 h-4" />
           </button>
@@ -393,7 +393,7 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
       </div>
 
       {/* Filters & Search Control */}
-      <div className="bg-white rounded-2xl p-4 border border-emerald-900/10 shadow-xs space-y-3">
+      <div className="bg-white dark:bg-[#131f1a] rounded-2xl p-4 border border-emerald-900/10 dark:border-emerald-800/30 shadow-xs space-y-3">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
           {/* Search */}
           <div className="relative sm:col-span-2 md:col-span-3 lg:col-span-2">
@@ -403,12 +403,12 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="ស្វែងរកតាមឈ្មោះ, អត្តលេខ, ទូរស័ព្ទ..."
-              className="w-full pl-9 pr-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl text-xs focus:bg-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-hidden transition-all"
+              className="w-full pl-9 pr-3 py-2 bg-zinc-50 dark:bg-[#182620] border border-zinc-200 dark:border-zinc-700/80 rounded-xl text-xs text-zinc-800 dark:text-zinc-100 focus:bg-white dark:focus:bg-[#1c2e26] focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-hidden transition-all"
             />
             {search && (
               <button
                 onClick={() => setSearch('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -420,11 +420,11 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
             <select
               value={selectedMajor}
               onChange={(e) => setSelectedMajor(e.target.value)}
-              className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl text-xs text-zinc-700 focus:bg-white focus:border-emerald-500 outline-hidden cursor-pointer"
+              className="w-full px-3 py-2 bg-zinc-50 dark:bg-[#182620] border border-zinc-200 dark:border-zinc-700/80 rounded-xl text-xs text-zinc-700 dark:text-zinc-200 focus:bg-white dark:focus:bg-[#1c2e26] focus:border-emerald-500 outline-hidden cursor-pointer"
             >
               <option value="all">ជំនាញទាំងអស់ (All Majors)</option>
               {majors.map((m) => (
-                <option key={m.id} value={m.id}>
+                <option key={m.id} value={m.id} className="dark:bg-[#131f1a]">
                   {m.nameKhmer}
                 </option>
               ))}
@@ -436,11 +436,11 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
             <select
               value={selectedClass}
               onChange={(e) => setSelectedClass(e.target.value)}
-              className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl text-xs text-zinc-700 focus:bg-white focus:border-emerald-500 outline-hidden cursor-pointer"
+              className="w-full px-3 py-2 bg-zinc-50 dark:bg-[#182620] border border-zinc-200 dark:border-zinc-700/80 rounded-xl text-xs text-zinc-700 dark:text-zinc-200 focus:bg-white dark:focus:bg-[#1c2e26] focus:border-emerald-500 outline-hidden cursor-pointer"
             >
               <option value="all">ថ្នាក់ទាំងអស់ (All Classes)</option>
               {classes.map((c) => (
-                <option key={c.id} value={c.id}>
+                <option key={c.id} value={c.id} className="dark:bg-[#131f1a]">
                   {c.name}
                 </option>
               ))}
@@ -452,7 +452,7 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
             <select
               value={selectedShift}
               onChange={(e) => setSelectedShift(e.target.value)}
-              className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl text-xs text-zinc-700 focus:bg-white focus:border-emerald-500 outline-hidden cursor-pointer"
+              className="w-full px-3 py-2 bg-zinc-50 dark:bg-[#182620] border border-zinc-200 dark:border-zinc-700/80 rounded-xl text-xs text-zinc-700 dark:text-zinc-200 focus:bg-white dark:focus:bg-[#1c2e26] focus:border-emerald-500 outline-hidden cursor-pointer"
             >
               <option value="all">វេនទាំងអស់ (All Shifts)</option>
               <option value="morning">វេនព្រឹក (Morning)</option>
@@ -467,7 +467,7 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
             <select
               value={selectedYear}
               onChange={(e) => setSelectedYear(e.target.value)}
-              className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl text-xs text-zinc-700 focus:bg-white focus:border-emerald-500 outline-hidden cursor-pointer"
+              className="w-full px-3 py-2 bg-zinc-50 dark:bg-[#182620] border border-zinc-200 dark:border-zinc-700/80 rounded-xl text-xs text-zinc-700 dark:text-zinc-200 focus:bg-white dark:focus:bg-[#1c2e26] focus:border-emerald-500 outline-hidden cursor-pointer"
             >
               <option value="all">ឆ្នាំទាំងអស់ (All Years)</option>
               <option value="Year 1">ឆ្នាំទី១ (Year 1)</option>
@@ -482,7 +482,7 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
             <select
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
-              className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl text-xs text-zinc-700 focus:bg-white focus:border-emerald-500 outline-hidden cursor-pointer"
+              className="w-full px-3 py-2 bg-zinc-50 dark:bg-[#182620] border border-zinc-200 dark:border-zinc-700/80 rounded-xl text-xs text-zinc-700 dark:text-zinc-200 focus:bg-white dark:focus:bg-[#1c2e26] focus:border-emerald-500 outline-hidden cursor-pointer"
             >
               <option value="all">ស្ថានភាពទាំងអស់ (All Status)</option>
               <option value="active">កំពុងរៀន (Active)</option>
@@ -495,16 +495,16 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
 
         {/* Active Filters Bar & Reset */}
         {activeFiltersCount > 0 && (
-          <div className="flex items-center justify-between pt-2 border-t border-zinc-100 text-xs">
-            <div className="flex items-center gap-2 text-emerald-800">
-              <Filter className="w-3.5 h-3.5 text-emerald-600" />
+          <div className="flex items-center justify-between pt-2 border-t border-zinc-100 dark:border-zinc-800 text-xs">
+            <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-300">
+              <Filter className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
               <span>
                 តម្រងសកម្ម: <strong className="font-semibold">{activeFiltersCount}</strong> លក្ខខណ្ឌ (រកឃើញ {filteredStudents.length} នាក់)
               </span>
             </div>
             <button
               onClick={handleResetFilters}
-              className="px-2.5 py-1 rounded-lg bg-zinc-100 hover:bg-zinc-200 text-zinc-700 font-medium text-xs inline-flex items-center gap-1 cursor-pointer transition-colors"
+              className="px-2.5 py-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 font-medium text-xs inline-flex items-center gap-1 cursor-pointer transition-colors"
             >
               <X className="w-3 h-3" />
               <span>សម្អាតតម្រងទាំងអស់ (Reset)</span>
@@ -514,10 +514,10 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
       </div>
 
       {/* Student Table */}
-      <div className="bg-white rounded-3xl border border-emerald-900/10 shadow-xs overflow-hidden">
+      <div className="bg-white dark:bg-[#131f1a] rounded-3xl border border-emerald-900/10 dark:border-emerald-800/30 shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-zinc-50 border-b border-zinc-200 text-zinc-600 font-bold uppercase tracking-wider text-[11px]">
+            <thead className="bg-zinc-50 dark:bg-[#182620] border-b border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 font-bold uppercase tracking-wider text-[11px]">
               <tr>
                 <th className="py-3.5 px-4">អត្តលេខ & រូបថត</th>
                 <th className="py-3.5 px-4">ឈ្មោះនិស្សិត (ខ្មែរ / Latin / Chinese)</th>
@@ -529,48 +529,48 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
                 <th className="py-3.5 px-4 text-right">សកម្មភាព</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-100">
+            <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
               {filteredStudents.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="py-12 text-center text-zinc-400">
-                    <Users className="w-8 h-8 text-zinc-300 mx-auto mb-2" />
-                    <p className="font-semibold text-zinc-600">ពុំមានទិន្នន័យនិស្សិតទេ</p>
+                    <Users className="w-8 h-8 text-zinc-300 dark:text-zinc-600 mx-auto mb-2" />
+                    <p className="font-semibold text-zinc-600 dark:text-zinc-300">ពុំមានទិន្នន័យនិស្សិតទេ</p>
                     <p className="text-[11px]">សូមសាកល្បងផ្លាស់ប្តូរលក្ខខណ្ឌ Filter ឬបន្ថែមនិស្សិតថ្មី</p>
                   </td>
                 </tr>
               ) : (
                 filteredStudents.map((stu) => (
-                  <tr key={stu.id} className="hover:bg-emerald-50/40 transition-colors">
+                  <tr key={stu.id} className="hover:bg-emerald-50/40 dark:hover:bg-[#182620]/60 transition-colors">
                     {/* Student ID & Avatar */}
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-2.5">
                         <div
                           className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs ${
                             stu.gender === 'female'
-                              ? 'bg-rose-100 text-rose-700'
-                              : 'bg-blue-100 text-blue-700'
+                              ? 'bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300'
+                              : 'bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300'
                           }`}
                         >
                           {(stu.nameKhmer || stu.nameLatin || 'S').charAt(0)}
                         </div>
                         <div>
-                          <div className="font-bold text-zinc-900">{stu.studentCode}</div>
+                          <div className="font-bold text-zinc-900 dark:text-zinc-100">{stu.studentCode}</div>
                         </div>
                       </div>
                     </td>
 
                     {/* Names */}
                     <td className="py-3 px-4">
-                      <div className="font-bold text-zinc-900">{stu.nameKhmer}</div>
-                      <div className="text-[11px] text-zinc-500 font-medium">{stu.nameLatin}</div>
+                      <div className="font-bold text-zinc-900 dark:text-zinc-100">{stu.nameKhmer}</div>
+                      <div className="text-[11px] text-zinc-500 dark:text-zinc-400 font-medium">{stu.nameLatin}</div>
                       {stu.nameChinese && (
-                        <div className="text-[10px] text-emerald-800 font-semibold">{stu.nameChinese}</div>
+                        <div className="text-[10px] text-emerald-800 dark:text-emerald-400 font-semibold">{stu.nameChinese}</div>
                       )}
                     </td>
 
                     {/* Gender & DOB */}
                     <td className="py-3 px-4">
-                      <div className="font-medium text-zinc-800">
+                      <div className="font-medium text-zinc-800 dark:text-zinc-200">
                         {stu.gender === 'female' ? 'ស្រី (Female)' : 'ប្រុស (Male)'}
                       </div>
                       <div className="text-[11px] text-zinc-400">{stu.dob || '-'}</div>
@@ -578,13 +578,13 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
 
                     {/* Class & Major */}
                     <td className="py-3 px-4">
-                      <div className="font-bold text-zinc-900">{stu.className}</div>
-                      <div className="text-[11px] text-zinc-500">{stu.majorName}</div>
+                      <div className="font-bold text-zinc-900 dark:text-zinc-100">{stu.className}</div>
+                      <div className="text-[11px] text-zinc-500 dark:text-zinc-400">{stu.majorName}</div>
                     </td>
 
                     {/* Shift & Year */}
                     <td className="py-3 px-4">
-                      <div className="inline-flex items-center gap-1 font-semibold text-emerald-900 bg-emerald-50 border border-emerald-200/60 px-2 py-0.5 rounded-md text-[10.5px]">
+                      <div className="inline-flex items-center gap-1 font-semibold text-emerald-900 dark:text-emerald-200 bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200/60 dark:border-emerald-800/40 px-2 py-0.5 rounded-md text-[10.5px]">
                         {stu.shift === 'morning' && <Sun className="w-3 h-3 text-amber-500" />}
                         {stu.shift === 'afternoon' && <Sunset className="w-3 h-3 text-orange-500" />}
                         {stu.shift === 'evening' && <Moon className="w-3 h-3 text-indigo-500" />}
@@ -596,7 +596,7 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
 
                     {/* Phone / Contact */}
                     <td className="py-3 px-4">
-                      <div className="font-medium text-zinc-800 flex items-center gap-1">
+                      <div className="font-medium text-zinc-800 dark:text-zinc-200 flex items-center gap-1">
                         <Phone className="w-3 h-3 text-zinc-400" />
                         <span>{stu.phone || '-'}</span>
                       </div>
@@ -610,12 +610,12 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
                       <span
                         className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-bold ${
                           stu.status === 'active'
-                            ? 'bg-emerald-100 text-emerald-800'
+                            ? 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300'
                             : stu.status === 'suspended'
-                            ? 'bg-amber-100 text-amber-800'
+                            ? 'bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300'
                             : stu.status === 'graduated'
-                            ? 'bg-blue-100 text-blue-800'
-                            : 'bg-zinc-100 text-zinc-600'
+                            ? 'bg-blue-100 dark:bg-blue-950/80 text-blue-800 dark:text-blue-300'
+                            : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400'
                         }`}
                       >
                         {getStatusLabel(stu.status)}
@@ -628,14 +628,14 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
                         <button
                           onClick={() => openEditModal(stu)}
                           title="កែប្រែ"
-                          className="p-1.5 rounded-lg text-zinc-500 hover:text-emerald-700 hover:bg-emerald-50 transition-colors cursor-pointer"
+                          className="p-1.5 rounded-lg text-zinc-500 hover:text-emerald-700 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 transition-colors cursor-pointer"
                         >
                           <Edit2 className="w-3.5 h-3.5" />
                         </button>
                         <button
                           onClick={() => handleDeleteStudent(stu.id, stu.nameKhmer)}
                           title="លុប"
-                          className="p-1.5 rounded-lg text-zinc-500 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                          className="p-1.5 rounded-lg text-zinc-500 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -651,25 +651,25 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
 
       {/* Add / Edit Student Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-emerald-900/10 space-y-5 animate-in fade-in zoom-in duration-150 my-8">
-            <div className="flex items-center justify-between pb-4 border-b border-zinc-100">
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white dark:bg-[#131f1a] rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-emerald-900/10 dark:border-emerald-800/30 space-y-5 animate-in fade-in zoom-in duration-150 my-8">
+            <div className="flex items-center justify-between pb-4 border-b border-zinc-100 dark:border-zinc-800">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center">
-                  <GraduationCap className="w-4 h-4 text-emerald-700" />
+                <div className="w-8 h-8 rounded-xl bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 flex items-center justify-center">
+                  <GraduationCap className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-zinc-900 text-base">
+                  <h3 className="font-bold text-zinc-900 dark:text-zinc-100 text-base">
                     {editingStudent ? 'កែប្រែព័ត៌មាននិស្សិត' : 'ចុះឈ្មោះនិស្សិតថ្មី (New Student)'}
                   </h3>
-                  <p className="text-xs text-zinc-500">
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
                     វិទ្យាស្ថានគរុកោសល្យភាសាចិនក្នុងតំបន់ (International Chinese Education and Teachers Institute)
                   </p>
                 </div>
               </div>
               <button
                 onClick={closeModal}
-                className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100"
+                className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -678,7 +678,7 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
             <form onSubmit={handleSaveStudent} className="space-y-4 text-xs">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block font-bold text-zinc-700 mb-1">
+                  <label className="block font-bold text-zinc-700 dark:text-zinc-300 mb-1">
                     អត្តលេខនិស្សិត (Student ID) *
                   </label>
                   <input
@@ -687,12 +687,12 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
                     value={formStudentCode}
                     onChange={(e) => setFormStudentCode(e.target.value)}
                     placeholder="CPI-2025-001"
-                    className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl focus:bg-white focus:border-emerald-500 outline-hidden font-medium"
+                    className="w-full px-3 py-2 bg-zinc-50 dark:bg-[#182620] border border-zinc-200 dark:border-zinc-700/80 rounded-xl text-zinc-900 dark:text-zinc-100 focus:bg-white dark:focus:bg-[#1c2e26] focus:border-emerald-500 outline-hidden font-medium"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-bold text-zinc-700 mb-1">
+                  <label className="block font-bold text-zinc-700 dark:text-zinc-300 mb-1">
                     ឈ្មោះខ្មែរ (Name Khmer) *
                   </label>
                   <input
@@ -701,12 +701,12 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
                     value={formNameKhmer}
                     onChange={(e) => setFormNameKhmer(e.target.value)}
                     placeholder="ឧ. ជា សុខនីកា"
-                    className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl focus:bg-white focus:border-emerald-500 outline-hidden font-medium"
+                    className="w-full px-3 py-2 bg-zinc-50 dark:bg-[#182620] border border-zinc-200 dark:border-zinc-700/80 rounded-xl text-zinc-900 dark:text-zinc-100 focus:bg-white dark:focus:bg-[#1c2e26] focus:border-emerald-500 outline-hidden font-medium"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-bold text-zinc-700 mb-1">
+                  <label className="block font-bold text-zinc-700 dark:text-zinc-300 mb-1">
                     អក្សរឡាតាំង (Name Latin)
                   </label>
                   <input
@@ -714,12 +714,12 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
                     value={formNameLatin}
                     onChange={(e) => setFormNameLatin(e.target.value)}
                     placeholder="e.g. Chea Soknika"
-                    className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl focus:bg-white focus:border-emerald-500 outline-hidden font-medium"
+                    className="w-full px-3 py-2 bg-zinc-50 dark:bg-[#182620] border border-zinc-200 dark:border-zinc-700/80 rounded-xl text-zinc-900 dark:text-zinc-100 focus:bg-white dark:focus:bg-[#1c2e26] focus:border-emerald-500 outline-hidden font-medium"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-bold text-zinc-700 mb-1">
+                  <label className="block font-bold text-zinc-700 dark:text-zinc-300 mb-1">
                     ឈ្មោះជាភាសាចិន (Chinese Name)
                   </label>
                   <input
@@ -727,16 +727,16 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
                     value={formNameChinese}
                     onChange={(e) => setFormNameChinese(e.target.value)}
                     placeholder="ឧ. 谢淑妮"
-                    className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl focus:bg-white focus:border-emerald-500 outline-hidden font-medium"
+                    className="w-full px-3 py-2 bg-zinc-50 dark:bg-[#182620] border border-zinc-200 dark:border-zinc-700/80 rounded-xl text-zinc-900 dark:text-zinc-100 focus:bg-white dark:focus:bg-[#1c2e26] focus:border-emerald-500 outline-hidden font-medium"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-bold text-zinc-700 mb-1">ភេទ (Gender)</label>
+                  <label className="block font-bold text-zinc-700 dark:text-zinc-300 mb-1">ភេទ (Gender)</label>
                   <select
                     value={formGender}
                     onChange={(e) => setFormGender(e.target.value as any)}
-                    className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl focus:bg-white focus:border-emerald-500 outline-hidden cursor-pointer font-medium"
+                    className="w-full px-3 py-2 bg-zinc-50 dark:bg-[#182620] border border-zinc-200 dark:border-zinc-700/80 rounded-xl text-zinc-900 dark:text-zinc-100 focus:bg-white dark:focus:bg-[#1c2e26] focus:border-emerald-500 outline-hidden cursor-pointer font-medium"
                   >
                     <option value="female">ស្រី (Female)</option>
                     <option value="male">ប្រុស (Male)</option>
@@ -744,28 +744,28 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
                 </div>
 
                 <div>
-                  <label className="block font-bold text-zinc-700 mb-1">
+                  <label className="block font-bold text-zinc-700 dark:text-zinc-300 mb-1">
                     ថ្ងៃខែឆ្នាំកំណើត (DOB)
                   </label>
                   <input
                     type="date"
                     value={formDob}
                     onChange={(e) => setFormDob(e.target.value)}
-                    className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl focus:bg-white focus:border-emerald-500 outline-hidden font-medium"
+                    className="w-full px-3 py-2 bg-zinc-50 dark:bg-[#182620] border border-zinc-200 dark:border-zinc-700/80 rounded-xl text-zinc-900 dark:text-zinc-100 focus:bg-white dark:focus:bg-[#1c2e26] focus:border-emerald-500 outline-hidden font-medium"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-bold text-zinc-700 mb-1">
+                  <label className="block font-bold text-zinc-700 dark:text-zinc-300 mb-1">
                     ជំនាញសិក្សា (Major)
                   </label>
                   <select
                     value={formMajorId}
                     onChange={(e) => setFormMajorId(e.target.value)}
-                    className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl focus:bg-white focus:border-emerald-500 outline-hidden cursor-pointer font-medium"
+                    className="w-full px-3 py-2 bg-zinc-50 dark:bg-[#182620] border border-zinc-200 dark:border-zinc-700/80 rounded-xl text-zinc-900 dark:text-zinc-100 focus:bg-white dark:focus:bg-[#1c2e26] focus:border-emerald-500 outline-hidden cursor-pointer font-medium"
                   >
                     {majors.map((m) => (
-                      <option key={m.id} value={m.id}>
+                      <option key={m.id} value={m.id} className="dark:bg-[#131f1a]">
                         {m.nameKhmer} ({m.nameLatin})
                       </option>
                     ))}
@@ -773,16 +773,16 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
                 </div>
 
                 <div>
-                  <label className="block font-bold text-zinc-700 mb-1">
+                  <label className="block font-bold text-zinc-700 dark:text-zinc-300 mb-1">
                     ថ្នាក់រៀន (Class)
                   </label>
                   <select
                     value={formClassId}
                     onChange={(e) => setFormClassId(e.target.value)}
-                    className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl focus:bg-white focus:border-emerald-500 outline-hidden cursor-pointer font-medium"
+                    className="w-full px-3 py-2 bg-zinc-50 dark:bg-[#182620] border border-zinc-200 dark:border-zinc-700/80 rounded-xl text-zinc-900 dark:text-zinc-100 focus:bg-white dark:focus:bg-[#1c2e26] focus:border-emerald-500 outline-hidden cursor-pointer font-medium"
                   >
                     {classes.map((c) => (
-                      <option key={c.id} value={c.id}>
+                      <option key={c.id} value={c.id} className="dark:bg-[#131f1a]">
                         {c.name}
                       </option>
                     ))}
@@ -790,13 +790,13 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
                 </div>
 
                 <div>
-                  <label className="block font-bold text-zinc-700 mb-1">
+                  <label className="block font-bold text-zinc-700 dark:text-zinc-300 mb-1">
                     វេនសិក្សា (Shift)
                   </label>
                   <select
                     value={formShift}
                     onChange={(e) => setFormShift(e.target.value as ShiftType)}
-                    className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl focus:bg-white focus:border-emerald-500 outline-hidden cursor-pointer font-medium"
+                    className="w-full px-3 py-2 bg-zinc-50 dark:bg-[#182620] border border-zinc-200 dark:border-zinc-700/80 rounded-xl text-zinc-900 dark:text-zinc-100 focus:bg-white dark:focus:bg-[#1c2e26] focus:border-emerald-500 outline-hidden cursor-pointer font-medium"
                   >
                     <option value="morning">វេនព្រឹក (Morning 07:30-11:00)</option>
                     <option value="afternoon">វេនរសៀល (Afternoon 13:30-17:00)</option>
@@ -806,13 +806,13 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
                 </div>
 
                 <div>
-                  <label className="block font-bold text-zinc-700 mb-1">
+                  <label className="block font-bold text-zinc-700 dark:text-zinc-300 mb-1">
                     កម្រិតឆ្នាំសិក្សា (Year)
                   </label>
                   <select
                     value={formYear}
                     onChange={(e) => setFormYear(e.target.value as AcademicYearType)}
-                    className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl focus:bg-white focus:border-emerald-500 outline-hidden cursor-pointer font-medium"
+                    className="w-full px-3 py-2 bg-zinc-50 dark:bg-[#182620] border border-zinc-200 dark:border-zinc-700/80 rounded-xl text-zinc-900 dark:text-zinc-100 focus:bg-white dark:focus:bg-[#1c2e26] focus:border-emerald-500 outline-hidden cursor-pointer font-medium"
                   >
                     <option value="Year 1">ឆ្នាំទី១ (Year 1)</option>
                     <option value="Year 2">ឆ្នាំទី២ (Year 2)</option>
@@ -822,18 +822,18 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
                 </div>
 
                 <div>
-                  <label className="block font-bold text-zinc-700 mb-1">លេខទូរស័ព្ទ (Phone)</label>
+                  <label className="block font-bold text-zinc-700 dark:text-zinc-300 mb-1">លេខទូរស័ព្ទ (Phone)</label>
                   <input
                     type="text"
                     value={formPhone}
                     onChange={(e) => setFormPhone(e.target.value)}
                     placeholder="012 345 678"
-                    className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl focus:bg-white focus:border-emerald-500 outline-hidden font-medium"
+                    className="w-full px-3 py-2 bg-zinc-50 dark:bg-[#182620] border border-zinc-200 dark:border-zinc-700/80 rounded-xl text-zinc-900 dark:text-zinc-100 focus:bg-white dark:focus:bg-[#1c2e26] focus:border-emerald-500 outline-hidden font-medium"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-bold text-zinc-700 mb-1">
+                  <label className="block font-bold text-zinc-700 dark:text-zinc-300 mb-1">
                     លេខអាណាព្យាបាល (Guardian Phone)
                   </label>
                   <input
@@ -841,27 +841,27 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
                     value={formGuardianPhone}
                     onChange={(e) => setFormGuardianPhone(e.target.value)}
                     placeholder="098 765 432"
-                    className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl focus:bg-white focus:border-emerald-500 outline-hidden font-medium"
+                    className="w-full px-3 py-2 bg-zinc-50 dark:bg-[#182620] border border-zinc-200 dark:border-zinc-700/80 rounded-xl text-zinc-900 dark:text-zinc-100 focus:bg-white dark:focus:bg-[#1c2e26] focus:border-emerald-500 outline-hidden font-medium"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block font-bold text-zinc-700 mb-1">អាសយដ្ឋាន (Address)</label>
+                <label className="block font-bold text-zinc-700 dark:text-zinc-300 mb-1">អាសយដ្ឋាន (Address)</label>
                 <input
                   type="text"
                   value={formAddress}
                   onChange={(e) => setFormAddress(e.target.value)}
                   placeholder="រាជធានីភ្នំពេញ"
-                  className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl focus:bg-white focus:border-emerald-500 outline-hidden font-medium"
+                  className="w-full px-3 py-2 bg-zinc-50 dark:bg-[#182620] border border-zinc-200 dark:border-zinc-700/80 rounded-xl text-zinc-900 dark:text-zinc-100 focus:bg-white dark:focus:bg-[#1c2e26] focus:border-emerald-500 outline-hidden font-medium"
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-zinc-100">
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-zinc-100 dark:border-zinc-800">
                 <button
                   type="button"
                   onClick={closeModal}
-                  className="px-4 py-2 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-700 font-semibold cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 font-semibold cursor-pointer"
                 >
                   បោះបង់ (Cancel)
                 </button>
@@ -880,21 +880,21 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
       {/* Delete All Confirmation Modal */}
       {isDeleteAllModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-6 max-w-md w-full border border-rose-100 shadow-2xl space-y-4">
-            <div className="w-12 h-12 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center mx-auto">
+          <div className="bg-white dark:bg-[#131f1a] rounded-3xl p-6 max-w-md w-full border border-rose-100 dark:border-rose-900/30 shadow-2xl space-y-4">
+            <div className="w-12 h-12 rounded-2xl bg-rose-100 dark:bg-rose-950/80 text-rose-600 dark:text-rose-400 flex items-center justify-center mx-auto">
               <Trash2 className="w-6 h-6" />
             </div>
 
             <div className="text-center space-y-1">
-              <h3 className="text-lg font-bold text-zinc-900">
+              <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
                 តើអ្នកពិតជាចង់លុបទិន្នន័យនិស្សិតទាំងអស់មែនទេ?
               </h3>
-              <p className="text-xs text-zinc-500">
-                សកម្មភាពនេះនឹងលុបទិន្នន័យនិស្សិតទាំងអស់ចំនួន <strong className="text-rose-600 font-bold">{students.length} នាក់</strong> ចេញពីប្រព័ន្ធជាអចិន្ត្រៃយ៍ ហើយមិនអាចត្រឡប់ក្រោយបានឡើយ។
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                សកម្មភាពនេះនឹងលុបទិន្នន័យនិស្សិតទាំងអស់ចំនួន <strong className="text-rose-600 dark:text-rose-400 font-bold">{students.length} នាក់</strong> ចេញពីប្រព័ន្ធជាអចិន្ត្រៃយ៍ ហើយមិនអាចត្រឡប់ក្រោយបានឡើយ។
               </p>
             </div>
 
-            <div className="bg-rose-50 border border-rose-200 rounded-2xl p-3 text-xs text-rose-800 space-y-1">
+            <div className="bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/50 rounded-2xl p-3 text-xs text-rose-800 dark:text-rose-300 space-y-1">
               <p className="font-bold flex items-center gap-1.5">
                 <span>⚠️ ការព្រមាន (Warning):</span>
               </p>
@@ -908,7 +908,7 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
                 type="button"
                 onClick={() => setIsDeleteAllModalOpen(false)}
                 disabled={isDeletingAll}
-                className="flex-1 px-4 py-2.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-700 font-semibold text-xs transition-colors cursor-pointer"
+                className="flex-1 px-4 py-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 font-semibold text-xs transition-colors cursor-pointer"
               >
                 បោះបង់ (Cancel)
               </button>

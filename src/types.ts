@@ -100,6 +100,8 @@ export interface AppUser {
   email: string | null;
   displayName: string | null;
   photoURL: string | null;
+  role?: string;
+  isAnonymous?: boolean;
 }
 
 export type ActiveTab = 

@@ -118,6 +118,24 @@
         "createdAt": { "type": "string" }
       },
       "required": ["id", "date", "teacherId", "status"]
+    },
+    "BackupSnapshot": {
+      "title": "BackupSnapshot",
+      "description": "Complete database snapshot backup",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "timestamp": { "type": "string" },
+        "createdBy": { "type": "string" },
+        "totalStudents": { "type": "number" },
+        "totalTeachers": { "type": "number" },
+        "totalClasses": { "type": "number" },
+        "totalMajors": { "type": "number" },
+        "totalAttendance": { "type": "number" },
+        "totalTeacherAttendance": { "type": "number" },
+        "data": { "type": "string" }
+      },
+      "required": ["id", "timestamp"]
     }
   },
   "firestore": {
@@ -144,6 +162,10 @@
     "/teacher_attendance/{id}": {
       "schema": "TeacherAttendance",
       "description": "Teacher attendance logs"
+    },
+    "/backups/{backupId}": {
+      "schema": "BackupSnapshot",
+      "description": "Full system backup records"
     }
   }
 }

@@ -8,6 +8,9 @@ import { TeacherAttendanceView } from './components/TeacherAttendanceView';
 import { ClassesView } from './components/ClassesView';
 import { MajorsView } from './components/MajorsView';
 import { ReportsView } from './components/ReportsView';
+import { LoginModal } from './components/LoginModal';
+import { LoginPage } from './components/LoginPage';
+import { BackupModal } from './components/BackupModal';
 import { instituteService, authService } from './service/instituteService';
 import {
   Student,
@@ -26,6 +29,37 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
   const [user, setUser] = useState<AppUser | null>(null);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isBackupModalOpen, setIsBackupModalOpen] = useState(false);
+
+  // Dark mode state
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem('cpi_theme_mode');
+      if (saved !== null) return saved === 'dark';
+    } catch (e) {
+      console.warn(e);
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+      try {
+        localStorage.setItem('cpi_theme_mode', 'dark');
+      } catch (e) {}
+    } else {
+      document.documentElement.classList.remove('dark');
+      try {
+        localStorage.setItem('cpi_theme_mode', 'light');
+      } catch (e) {}
+    }
+  }, [isDarkMode]);
+
+  const toggleDarkMode = () => {
+    setIsDarkMode((prev) => !prev);
+  };
 
   // Core Data States
   const [students, setStudents] = useState<Student[]>([]);
@@ -83,15 +117,8 @@ export default function App() {
     };
   }, []);
 
-  const handleLogin = async () => {
-    try {
-      const loggedUser = await authService.signInWithGoogle();
-      setUser(loggedUser);
-      showToast(`សូមស្វាគមន៍, ${loggedUser.displayName || 'លោកគ្រូ/អ្នកគ្រូ'}!`, 'success');
-    } catch (e: any) {
-      console.error(e);
-      showToast(e.message || 'ការចូលគណនីបានបរាជ័យ', 'error');
-    }
+  const handleOpenLogin = () => {
+    setIsLoginModalOpen(true);
   };
 
   const handleLogout = async () => {
@@ -106,27 +133,78 @@ export default function App() {
 
   if (isAuthLoading) {
     return (
-      <div className="min-h-screen bg-[#f8faf8] flex items-center justify-center">
+      <div className="min-h-screen bg-[#f8faf8] dark:bg-[#0c1410] flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
           <div className="w-12 h-12 rounded-2xl bg-emerald-700 flex items-center justify-center text-white shadow-md animate-pulse">
             <GraduationCap className="w-6 h-6" />
           </div>
-          <p className="text-xs font-bold text-zinc-500">កំពុងតភ្ជាប់វិទ្យាស្ថានគរុកោសល្យភាសាចិនក្នុងតំបន់...</p>
+          <p className="text-xs font-bold text-zinc-500 dark:text-zinc-400">កំពុងតភ្ជាប់វិទ្យាស្ថានគរុកោសល្យភាសាចិនក្នុងតំបន់...</p>
         </div>
       </div>
     );
   }
 
+  // FIRST PAGE IS LOGIN FORM IF NOT AUTHENTICATED
+  if (!user) {
+    return (
+      <>
+        <LoginPage
+          onSuccess={(loggedUser) => {
+            setUser(loggedUser);
+          }}
+          onContinueAsGuest={() => {
+            setUser({
+              uid: 'guest-' + Date.now(),
+              displayName: 'ភ្ញៀវ (Guest)',
+              email: 'guest@ici.edu.kh',
+              role: 'Guest',
+              isAnonymous: true,
+            });
+            showToast('បានចូលមើលជាភ្ញៀវ (Guest Explorer Mode)', 'info');
+          }}
+          showToast={showToast}
+          isDarkMode={isDarkMode}
+          onToggleDarkMode={toggleDarkMode}
+        />
+
+        {/* Toast Alert */}
+        <AnimatePresence>
+          {toastMessage && (
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 16 }}
+              className={`fixed bottom-6 right-6 z-50 px-4 py-3 rounded-2xl shadow-xl border text-xs font-bold flex items-center gap-2 backdrop-blur-md ${
+                toastMessage.type === 'error'
+                  ? 'bg-rose-900/90 text-white border-rose-700'
+                  : toastMessage.type === 'info'
+                  ? 'bg-zinc-900/90 text-white border-zinc-700'
+                  : 'bg-emerald-900/90 text-white border-emerald-700'
+              }`}
+            >
+              {toastMessage.type === 'success' && <CheckCircle2 className="w-4 h-4 text-emerald-300" />}
+              {toastMessage.type === 'error' && <AlertCircle className="w-4 h-4 text-rose-300" />}
+              <span>{toastMessage.text}</span>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-[#f7faf8] text-zinc-900 flex flex-col selection:bg-emerald-600 selection:text-white font-sans antialiased">
+    <div className="min-h-screen bg-[#f7faf8] dark:bg-[#0c1410] text-zinc-900 dark:text-zinc-100 flex flex-col selection:bg-emerald-600 selection:text-white font-sans antialiased transition-colors">
       {/* Navigation Bar */}
       <Navbar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         user={user}
-        onLogin={handleLogin}
+        onLogin={handleOpenLogin}
         onLogout={handleLogout}
         totalStudents={students.length}
+        isDarkMode={isDarkMode}
+        onToggleDarkMode={toggleDarkMode}
+        onOpenBackup={() => setIsBackupModalOpen(true)}
       />
 
       {/* Main App Content Router */}
@@ -216,17 +294,39 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-emerald-900/10 py-6 bg-white text-center text-xs text-zinc-500">
+      <footer className="border-t border-emerald-900/10 dark:border-emerald-800/30 py-6 bg-white dark:bg-[#101c16] text-center text-xs text-zinc-500 dark:text-zinc-400 transition-colors">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <span className="font-bold text-emerald-900">វិទ្យាស្ថានគរុកោសល្យភាសាចិនក្នុងតំបន់</span>
-            <span>&bull; International Chinese Education and Teachers Institute</span>
+            <span className="font-bold text-emerald-900 dark:text-emerald-300">វិទ្យាស្ថានគរុកោសល្យភាសាចិនក្នុងតំបន់</span>
+            <span className="text-zinc-400 dark:text-zinc-500">&bull; International Chinese Education and Teachers Institute</span>
           </div>
-          <p className="text-[11px] text-zinc-400">
+          <p className="text-[11px] text-zinc-400 dark:text-zinc-500">
             ប្រព័ន្ធគ្រប់គ្រងនិស្សិត ថ្នាក់រៀន វេនសិក្សា និងវត្តមានឌីជីថល &bull; រក្សាសិទ្ធិគ្រប់យ៉ាង ២០២៥-២០២៦
           </p>
         </div>
       </footer>
+
+      {/* Login Modal */}
+      <LoginModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+        onSuccess={(loggedUser) => {
+          setUser(loggedUser);
+          showToast(`សូមស្វាគមន៍, ${loggedUser.displayName || 'លោកគ្រូ/អ្នកគ្រូ'}!`, 'success');
+        }}
+        showToast={showToast}
+      />
+
+      {/* Backup & Cloud Sync Modal */}
+      <BackupModal
+        isOpen={isBackupModalOpen}
+        onClose={() => setIsBackupModalOpen(false)}
+        user={user}
+        showToast={showToast}
+        onRefreshData={() => {
+          // Re-subscribe or state will automatically update from snapshot
+        }}
+      />
 
       {/* Toast Alert */}
       <AnimatePresence>

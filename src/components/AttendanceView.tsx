@@ -192,17 +192,17 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
       {/* Top Header Card */}
-      <div className="bg-white rounded-3xl p-6 border border-emerald-900/10 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white dark:bg-[#131f1a] rounded-3xl p-6 border border-emerald-900/10 dark:border-emerald-800/30 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-sm">
-              <CalendarCheck className="w-4 h-4 text-emerald-700" />
+            <span className="w-8 h-8 rounded-xl bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 flex items-center justify-center font-bold text-sm">
+              <CalendarCheck className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
             </span>
-            <h2 className="text-xl font-bold text-zinc-900">
+            <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">
               កត់ត្រាវត្តមាននិស្សិត (Attendance Workspace)
             </h2>
           </div>
-          <p className="text-xs text-zinc-500 mt-1">
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
             កត់ត្រាវត្តមានប្រចាំថ្ងៃ និងតាមដានច្បាប់ឈប់របស់និស្សិតតាមថ្នាក់ និងវេនសិក្សា
           </p>
         </div>
@@ -211,17 +211,17 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
         <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={handleMarkAllPresent}
-            className="px-3.5 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-semibold text-xs inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+            className="px-3.5 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 font-semibold text-xs inline-flex items-center gap-1.5 transition-colors cursor-pointer"
           >
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
             <span>វត្តមានទាំងអស់ (All Present)</span>
           </button>
 
           <button
             onClick={handleExportAttendance}
-            className="px-3.5 py-2 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-700 font-semibold text-xs inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+            className="px-3.5 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 font-semibold text-xs inline-flex items-center gap-1.5 transition-colors cursor-pointer"
           >
-            <FileSpreadsheet className="w-3.5 h-3.5 text-zinc-600" />
+            <FileSpreadsheet className="w-3.5 h-3.5 text-zinc-600 dark:text-zinc-400" />
             <span>Export Excel</span>
           </button>
 
@@ -237,20 +237,20 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
       </div>
 
       {/* Select Class & Date Controls */}
-      <div className="bg-white rounded-2xl p-4 border border-emerald-900/10 shadow-xs space-y-4">
+      <div className="bg-white dark:bg-[#131f1a] rounded-2xl p-4 border border-emerald-900/10 dark:border-emerald-800/30 shadow-xs space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {/* Class Selector */}
           <div>
-            <label className="block text-xs font-bold text-zinc-700 mb-1">
+            <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
               ជ្រើសរើសថ្នាក់រៀន (Classroom)
             </label>
             <select
               value={selectedClassId}
               onChange={(e) => setSelectedClassId(e.target.value)}
-              className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl text-xs font-semibold text-zinc-800 focus:bg-white focus:border-emerald-500 outline-hidden cursor-pointer"
+              className="w-full px-3 py-2 bg-zinc-50 dark:bg-[#182620] border border-zinc-200 dark:border-zinc-700/80 rounded-xl text-xs font-semibold text-zinc-800 dark:text-zinc-100 focus:bg-white dark:focus:bg-[#1c2e26] focus:border-emerald-500 outline-hidden cursor-pointer"
             >
               {classes.map((c) => (
-                <option key={c.id} value={c.id}>
+                <option key={c.id} value={c.id} className="dark:bg-[#131f1a]">
                   {c.name} ({getShiftLabel(c.shift)}) - {c.room}
                 </option>
               ))}
@@ -259,20 +259,20 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
 
           {/* Date Selector */}
           <div>
-            <label className="block text-xs font-bold text-zinc-700 mb-1">
+            <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
               កាលបរិច្ឆេទ (Attendance Date)
             </label>
             <input
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl text-xs font-semibold text-zinc-800 focus:bg-white focus:border-emerald-500 outline-hidden font-mono"
+              className="w-full px-3 py-2 bg-zinc-50 dark:bg-[#182620] border border-zinc-200 dark:border-zinc-700/80 rounded-xl text-xs font-semibold text-zinc-800 dark:text-zinc-100 focus:bg-white dark:focus:bg-[#1c2e26] focus:border-emerald-500 outline-hidden font-mono"
             />
           </div>
 
           {/* Local Search */}
           <div>
-            <label className="block text-xs font-bold text-zinc-700 mb-1">
+            <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
               ស្វែងរកឈ្មោះនិស្សិតក្នុងថ្នាក់
             </label>
             <div className="relative">
@@ -282,7 +282,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="ឈ្មោះ ឬ អត្តលេខ..."
-                className="w-full pl-8 pr-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl text-xs focus:bg-white focus:border-emerald-500 outline-hidden"
+                className="w-full pl-8 pr-3 py-2 bg-zinc-50 dark:bg-[#182620] border border-zinc-200 dark:border-zinc-700/80 rounded-xl text-xs text-zinc-800 dark:text-zinc-100 focus:bg-white dark:focus:bg-[#1c2e26] focus:border-emerald-500 outline-hidden"
               />
             </div>
           </div>
@@ -290,27 +290,27 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
 
         {/* Selected Class info badge & Stat counters */}
         {selectedClass && (
-          <div className="pt-2 border-t border-zinc-100 flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800 flex flex-wrap items-center justify-between gap-3 text-xs">
             <div className="flex items-center gap-2">
-              <span className="font-bold text-zinc-800">{selectedClass.name}</span>
+              <span className="font-bold text-zinc-800 dark:text-zinc-100">{selectedClass.name}</span>
               <span className="text-zinc-400">•</span>
-              <span className="text-emerald-700 font-semibold">{selectedClass.majorName}</span>
+              <span className="text-emerald-700 dark:text-emerald-400 font-semibold">{selectedClass.majorName}</span>
               <span className="text-zinc-400">•</span>
-              <span className="text-zinc-500 font-medium">{selectedClass.room}</span>
+              <span className="text-zinc-500 dark:text-zinc-400 font-medium">{selectedClass.room}</span>
             </div>
 
             {/* Quick Stat Pills */}
             <div className="flex items-center gap-2">
-              <span className="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-bold text-[11px]">
+              <span className="px-2 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 font-bold text-[11px]">
                 វត្តមាន (P): {presentCount}
               </span>
-              <span className="px-2 py-0.5 rounded-md bg-amber-100 text-amber-800 font-bold text-[11px]">
+              <span className="px-2 py-0.5 rounded-md bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 font-bold text-[11px]">
                 សុំច្បាប់ (E): {permissionCount}
               </span>
-              <span className="px-2 py-0.5 rounded-md bg-rose-100 text-rose-800 font-bold text-[11px]">
+              <span className="px-2 py-0.5 rounded-md bg-rose-100 dark:bg-rose-950/80 text-rose-800 dark:text-rose-300 font-bold text-[11px]">
                 អវត្តមាន (A): {absentCount}
               </span>
-              <span className="px-2 py-0.5 rounded-md bg-blue-100 text-blue-800 font-bold text-[11px]">
+              <span className="px-2 py-0.5 rounded-md bg-blue-100 dark:bg-blue-950/80 text-blue-800 dark:text-blue-300 font-bold text-[11px]">
                 មកយឺត (L): {lateCount}
               </span>
             </div>
@@ -319,10 +319,10 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
       </div>
 
       {/* Attendance Table */}
-      <div className="bg-white rounded-3xl border border-emerald-900/10 shadow-xs overflow-hidden">
+      <div className="bg-white dark:bg-[#131f1a] rounded-3xl border border-emerald-900/10 dark:border-emerald-800/30 shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-zinc-50 border-b border-zinc-200 text-zinc-600 font-bold uppercase tracking-wider text-[11px]">
+            <thead className="bg-zinc-50 dark:bg-[#182620] border-b border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 font-bold uppercase tracking-wider text-[11px]">
               <tr>
                 <th className="py-3 px-4 w-12 text-center">ល.រ</th>
                 <th className="py-3 px-4">អត្តលេខ</th>
@@ -331,12 +331,12 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                 <th className="py-3 px-4">កំណត់ចំណាំ / មូលហេតុសុំច្បាប់ (Notes)</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-100">
+            <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
               {filteredClassStudents.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="py-12 text-center text-zinc-400">
-                    <Users className="w-8 h-8 text-zinc-300 mx-auto mb-2" />
-                    <p className="font-semibold text-zinc-600">ពុំមាននិស្សិតក្នុងថ្នាក់នេះទេ</p>
+                    <Users className="w-8 h-8 text-zinc-300 dark:text-zinc-600 mx-auto mb-2" />
+                    <p className="font-semibold text-zinc-600 dark:text-zinc-300">ពុំមាននិស្សិតក្នុងថ្នាក់នេះទេ</p>
                     <p className="text-[11px]">សូមជ្រើសរើសថ្នាក់រៀនផ្សេង ឬបញ្ចូលនិស្សិតថ្មីទៅក្នុងថ្នាក់នេះ</p>
                   </td>
                 </tr>
@@ -344,20 +344,20 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                 filteredClassStudents.map((stu, index) => {
                   const draft = attendanceDraft[stu.id] || { status: 'present', note: '' };
                   return (
-                    <tr key={stu.id} className="hover:bg-zinc-50/80 transition-colors">
+                    <tr key={stu.id} className="hover:bg-zinc-50/80 dark:hover:bg-[#182620]/60 transition-colors">
                       {/* Index */}
                       <td className="py-3 px-4 text-center font-bold text-zinc-400">
                         {index + 1}
                       </td>
 
                       {/* Student Code */}
-                      <td className="py-3 px-4 font-mono font-semibold text-zinc-700">
+                      <td className="py-3 px-4 font-mono font-semibold text-zinc-700 dark:text-zinc-300">
                         {stu.studentCode}
                       </td>
 
                       {/* Name */}
                       <td className="py-3 px-4">
-                        <div className="font-bold text-zinc-900">{stu.nameKhmer}</div>
+                        <div className="font-bold text-zinc-900 dark:text-zinc-100">{stu.nameKhmer}</div>
                         <div className="text-[11px] text-zinc-400 font-medium">
                           {stu.nameLatin} {stu.nameChinese && `• ${stu.nameChinese}`}
                         </div>
@@ -373,7 +373,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                             className={`px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1 transition-all cursor-pointer ${
                               draft.status === 'present'
                                 ? 'bg-emerald-600 text-white shadow-xs'
-                                : 'bg-zinc-100 text-zinc-600 hover:bg-emerald-50 hover:text-emerald-700'
+                                : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 hover:text-emerald-700 dark:hover:text-emerald-300'
                             }`}
                           >
                             <CheckCircle2 className="w-3.5 h-3.5" />
@@ -387,7 +387,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                             className={`px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1 transition-all cursor-pointer ${
                               draft.status === 'permission'
                                 ? 'bg-amber-600 text-white shadow-xs'
-                                : 'bg-zinc-100 text-zinc-600 hover:bg-amber-50 hover:text-amber-700'
+                                : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-amber-50 dark:hover:bg-amber-950/50 hover:text-amber-700 dark:hover:text-amber-300'
                             }`}
                           >
                             <Clock className="w-3.5 h-3.5" />
@@ -401,7 +401,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                             className={`px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1 transition-all cursor-pointer ${
                               draft.status === 'absent'
                                 ? 'bg-rose-600 text-white shadow-xs'
-                                : 'bg-zinc-100 text-zinc-600 hover:bg-rose-50 hover:text-rose-700'
+                                : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-rose-50 dark:hover:bg-rose-950/50 hover:text-rose-700 dark:hover:text-rose-300'
                             }`}
                           >
                             <XCircle className="w-3.5 h-3.5" />
@@ -415,7 +415,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                             className={`px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1 transition-all cursor-pointer ${
                               draft.status === 'late'
                                 ? 'bg-blue-600 text-white shadow-xs'
-                                : 'bg-zinc-100 text-zinc-600 hover:bg-blue-50 hover:text-blue-700'
+                                : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-blue-50 dark:hover:bg-blue-950/50 hover:text-blue-700 dark:hover:text-blue-300'
                             }`}
                           >
                             <Clock className="w-3.5 h-3.5" />
@@ -431,7 +431,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                           value={draft.note}
                           onChange={(e) => handleSetNote(stu.id, e.target.value)}
                           placeholder="មូលហេតុ (ឧ. មានធុរៈគ្រួសារ, ឈឺ...)"
-                          className="w-full px-2.5 py-1.5 bg-zinc-50 border border-zinc-200 rounded-lg text-xs focus:bg-white focus:border-emerald-500 outline-hidden"
+                          className="w-full px-2.5 py-1.5 bg-zinc-50 dark:bg-[#182620] border border-zinc-200 dark:border-zinc-700/80 rounded-lg text-xs text-zinc-800 dark:text-zinc-200 focus:bg-white dark:focus:bg-[#1c2e26] focus:border-emerald-500 outline-hidden"
                         />
                       </td>
                     </tr>
