@@ -34,15 +34,13 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   isDarkMode,
   onToggleDarkMode
 }) => {
-  const [activeTab, setActiveTab] = useState<'quick' | 'google' | 'email'>('quick');
-  const [isRegister, setIsRegister] = useState(false);
+  const [activeTab, setActiveTab] = useState<'quick' | 'google' | 'email'>('email');
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Form inputs
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [displayName, setDisplayName] = useState('');
 
   const handleGoogleLogin = async () => {
     setIsLoading(true);
@@ -70,41 +68,30 @@ export const LoginPage: React.FC<LoginPageProps> = ({
     }
   };
 
-  const handleEmailSubmit = async (e: React.FormEvent) => {
+  const handlePasswordLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim() || !password.trim()) {
-      setErrorMessage('សូមបំពេញអ៊ីមែល និងពាក្យសម្ងាត់');
-      return;
-    }
-    if (isRegister && !displayName.trim()) {
-      setErrorMessage('សូមបញ្ចូលឈ្មោះពេញរបស់អ្នក');
+    if (!username.trim() || !password.trim()) {
+      setErrorMessage('សូមបំពេញឈ្មោះអ្នកប្រើប្រាស់ និងពាក្យសម្ងាត់');
       return;
     }
 
     setIsLoading(true);
     setErrorMessage(null);
     try {
-      let user: AppUser;
-      if (isRegister) {
-        user = await authService.signUpWithEmail(email.trim(), password, displayName.trim());
-        showToast('បានបង្កើតគណនី និងចូលដោយជោគជ័យ!', 'success');
-      } else {
-        user = await authService.signInWithEmail(email.trim(), password);
-        showToast('បានចូលគណនីដោយជោគជ័យ!', 'success');
+      if (username.trim() !== 'Admin' || password !== 'admin123') {
+        throw new Error('INVALID_CREDENTIALS');
       }
+
+      const user = authService.signInQuick(
+        'គណៈគ្រប់គ្រងវិទ្យាស្ថាន (Administrator)',
+        'Admin',
+        'admin@ici.edu.kh'
+      );
+      showToast('បានចូលគណនីដោយជោគជ័យ!', 'success');
       onSuccess(user);
     } catch (err: any) {
-      console.error('Email Auth Error:', err);
-      let msg = err.message || 'ការផ្ទៀងផ្ទាត់អ៊ីមែលបានបរាជ័យ';
-      if (
-        err.code === 'auth/user-not-found' ||
-        err.code === 'auth/wrong-password' ||
-        err.code === 'auth/invalid-credential'
-      ) {
-        msg = 'អ៊ីមែល ឬពាក្យសម្ងាត់មិនត្រឹមត្រូវទេ!';
-      } else if (err.code === 'auth/email-already-in-use') {
-        msg = 'អ៊ីមែលនេះមានគណនីរួចហើយ សូមជ្រើសរើស "ចូលគណនី"!';
-      }
+      console.error('Password Login Error:', err);
+      const msg = 'ឈ្មោះអ្នកប្រើប្រាស់ ឬពាក្យសម្ងាត់មិនត្រឹមត្រូវទេ!';
       setErrorMessage(msg);
       showToast(msg, 'error');
     } finally {
@@ -269,8 +256,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                       : 'text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200'
                   }`}
                 >
-                  <Mail className="w-3.5 h-3.5" />
-                  <span>អ៊ីមែល (Email)</span>
+                  <Lock className="w-3.5 h-3.5" />
+                  <span>ពាក្យសម្ងាត់ (Password)</span>
                 </button>
               </div>
 
@@ -425,40 +412,22 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                   </div>
                 )}
 
-                {/* 3. EMAIL / PASSWORD */}
+                {/* 3. USERNAME / PASSWORD */}
                 {activeTab === 'email' && (
-                  <form onSubmit={handleEmailSubmit} className="space-y-3.5">
-                    {isRegister && (
-                      <div>
-                        <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
-                          ឈ្មោះពេញ (Full Name) *
-                        </label>
-                        <div className="relative">
-                          <User className="w-4 h-4 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                          <input
-                            type="text"
-                            required
-                            value={displayName}
-                            onChange={(e) => setDisplayName(e.target.value)}
-                            placeholder="ឧ. សុខ ចាន់ថា"
-                            className="w-full pl-9 pr-3 py-2.5 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl text-xs focus:bg-white dark:focus:bg-zinc-950 focus:border-emerald-500 outline-hidden"
-                          />
-                        </div>
-                      </div>
-                    )}
-
+                  <form onSubmit={handlePasswordLogin} className="space-y-3.5">
                     <div>
                       <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
-                        អ៊ីមែល (Email) *
+                        ឈ្មោះអ្នកប្រើប្រាស់ (Username) *
                       </label>
                       <div className="relative">
-                        <Mail className="w-4 h-4 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                        <User className="w-4 h-4 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2" />
                         <input
-                          type="email"
+                          type="text"
                           required
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          placeholder="admin@cpi.edu.kh ឬ gmail.com"
+                          autoComplete="username"
+                          value={username}
+                          onChange={(e) => setUsername(e.target.value)}
+                          placeholder="Admin"
                           className="w-full pl-9 pr-3 py-2.5 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl text-xs focus:bg-white dark:focus:bg-zinc-950 focus:border-emerald-500 outline-hidden"
                         />
                       </div>
@@ -473,6 +442,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                         <input
                           type="password"
                           required
+                          autoComplete="current-password"
                           value={password}
                           onChange={(e) => setPassword(e.target.value)}
                           placeholder="••••••••"
@@ -490,26 +460,9 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                       <span>
                         {isLoading
                           ? 'កំពុងដំណើរការ...'
-                          : isRegister
-                          ? 'ចុះឈ្មោះ និងចូលប្រព័ន្ធ (Sign Up)'
                           : 'ចូលគណនី (Sign In)'}
                       </span>
                     </button>
-
-                    <div className="text-center pt-2 border-t border-zinc-100 dark:border-zinc-800">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIsRegister(!isRegister);
-                          setErrorMessage(null);
-                        }}
-                        className="text-xs text-emerald-700 dark:text-emerald-400 hover:underline font-semibold cursor-pointer"
-                      >
-                        {isRegister
-                          ? 'មានគណនីរួចហើយ? ចូលគណនីនៅទីនេះ'
-                          : 'មិនទាន់មានគណនី? ចុចទីនេះដើម្បីចុះឈ្មោះថ្មី'}
-                      </button>
-                    </div>
                   </form>
                 )}
 
