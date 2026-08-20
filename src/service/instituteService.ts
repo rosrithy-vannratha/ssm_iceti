@@ -78,10 +78,6 @@ function setLocal<T>(key: string, data: T[]): void {
 // Firestore write is slow, blocked, or fails silently. Firestore is treated
 // as a background sync target, not the source of truth for the live UI.
 const localListeners: Record<string, Set<(data: any[]) => void>> = {};
-const lastLocalWriteAt: Record<string, number> = {};
-// How long to ignore incoming Firestore snapshots after a local write, so a
-// stale/late remote snapshot can't silently revert what the user just did.
-const REMOTE_OVERWRITE_GUARD_MS = 8000;
 
 function registerLocalListener(key: string, cb: (data: any[]) => void): () => void {
   if (!localListeners[key]) localListeners[key] = new Set();
@@ -90,12 +86,38 @@ function registerLocalListener(key: string, cb: (data: any[]) => void): () => vo
 }
 
 function notifyLocal<T>(key: string, data: T[]): void {
-  lastLocalWriteAt[key] = Date.now();
   localListeners[key]?.forEach((cb) => cb(data));
 }
 
-function wasWrittenLocallyJustNow(key: string): boolean {
-  return Date.now() - (lastLocalWriteAt[key] || 0) < REMOTE_OVERWRITE_GUARD_MS;
+export type SyncStatus = 'synced' | 'syncing' | 'offline' | 'error';
+
+export interface SyncInfo {
+  status: SyncStatus;
+  lastSyncedAt: Date | null;
+  message?: string;
+}
+
+let currentSyncInfo: SyncInfo = {
+  status: 'synced',
+  lastSyncedAt: new Date(),
+  message: 'Real-time cloud sync active'
+};
+
+const syncListeners = new Set<(info: SyncInfo) => void>();
+
+export function updateSyncStatus(status: SyncStatus, message?: string) {
+  currentSyncInfo = {
+    status,
+    lastSyncedAt: status === 'synced' ? new Date() : currentSyncInfo.lastSyncedAt,
+    message
+  };
+  syncListeners.forEach((cb) => cb(currentSyncInfo));
+}
+
+export function subscribeSyncInfo(cb: (info: SyncInfo) => void): () => void {
+  cb(currentSyncInfo);
+  syncListeners.add(cb);
+  return () => syncListeners.delete(cb);
 }
 
 /**
@@ -131,6 +153,24 @@ async function commitInChunks(
     const batch = writeBatch(dbInstance);
     for (const item of chunk) {
       batch.set(doc(dbInstance, collectionName, item.id), sanitizeDoc(item));
+    }
+    await batch.commit();
+  }
+}
+
+/**
+ * Deletes Firestore documents in chunks of 400 documents
+ */
+async function deleteDocsInChunks(
+  dbInstance: any,
+  docs: Array<{ ref: any }>
+): Promise<void> {
+  const CHUNK_SIZE = 400;
+  for (let i = 0; i < docs.length; i += CHUNK_SIZE) {
+    const chunk = docs.slice(i, i + CHUNK_SIZE);
+    const batch = writeBatch(dbInstance);
+    for (const d of chunk) {
+      batch.delete(d.ref);
     }
     await batch.commit();
   }
@@ -345,30 +385,11 @@ export const instituteService = {
       const snap = await getDocs(collection(db, 'majors'));
       if (snap.empty) {
         console.log('Seeding initial International Chinese Education and Teachers Institute database...');
-        const batch = writeBatch(db);
-
-        // Seed majors
-        for (const m of INITIAL_MAJORS) {
-          batch.set(doc(db, 'majors', m.id), m);
-        }
-        // Seed classes
-        for (const c of INITIAL_CLASSES) {
-          batch.set(doc(db, 'classes', c.id), c);
-        }
-        // Seed teachers
-        for (const t of INITIAL_TEACHERS) {
-          batch.set(doc(db, 'teachers', t.id), t);
-        }
-        // Seed students
-        for (const s of INITIAL_STUDENTS) {
-          batch.set(doc(db, 'students', s.id), s);
-        }
-        // Seed attendance
-        for (const a of INITIAL_ATTENDANCE) {
-          batch.set(doc(db, 'attendance', a.id), a);
-        }
-
-        await batch.commit();
+        await commitInChunks(db, 'majors', INITIAL_MAJORS);
+        await commitInChunks(db, 'classes', INITIAL_CLASSES);
+        await commitInChunks(db, 'teachers', INITIAL_TEACHERS);
+        await commitInChunks(db, 'students', INITIAL_STUDENTS);
+        await commitInChunks(db, 'attendance', INITIAL_ATTENDANCE);
         console.log('Seed completed successfully!');
       }
     } catch (e) {
@@ -386,8 +407,6 @@ export const instituteService = {
     const unsubFirestore = onSnapshot(
       collection(db, 'majors'),
       (snap) => {
-        if (wasWrittenLocallyJustNow(LS_KEYS.MAJORS)) return;
-
         if (!snap.empty) {
           const list = snap.docs.map((d) => {
             const data = d.data();
@@ -402,18 +421,21 @@ export const instituteService = {
           });
           setLocal(LS_KEYS.MAJORS, list);
           callback(list);
+          updateSyncStatus('synced', 'Majors synced in real-time');
         } else {
           const currentLocal = getLocal<Major>(LS_KEYS.MAJORS, []);
           if (currentLocal && currentLocal.length > 0) {
             commitInChunks(db, 'majors', currentLocal).catch(() => {});
             callback(currentLocal);
           }
+          updateSyncStatus('synced');
         }
       },
       (err) => {
         console.warn('Majors snapshot error (using local cache):', err);
         const currentLocal = getLocal<Major>(LS_KEYS.MAJORS, INITIAL_MAJORS);
         callback(currentLocal);
+        updateSyncStatus('offline', 'Using local cache (Majors)');
       }
     );
 
@@ -430,11 +452,14 @@ export const instituteService = {
     else local.push(major);
     setLocal(LS_KEYS.MAJORS, local);
     notifyLocal(LS_KEYS.MAJORS, local);
+    updateSyncStatus('syncing', 'Saving major to cloud...');
 
     try {
       await setDoc(doc(db, 'majors', major.id), sanitizeDoc(major));
-    } catch (e) {
+      updateSyncStatus('synced', 'Major saved');
+    } catch (e: any) {
       console.warn('Error saving major to Firestore:', e);
+      updateSyncStatus('error', e?.message || 'Error saving major');
     }
   },
 
@@ -442,11 +467,14 @@ export const instituteService = {
     const local = getLocal<Major>(LS_KEYS.MAJORS, INITIAL_MAJORS).filter((m) => m.id !== id);
     setLocal(LS_KEYS.MAJORS, local);
     notifyLocal(LS_KEYS.MAJORS, local);
+    updateSyncStatus('syncing', 'Deleting major...');
 
     try {
       await deleteDoc(doc(db, 'majors', id));
-    } catch (e) {
+      updateSyncStatus('synced', 'Major deleted');
+    } catch (e: any) {
       console.warn('Error deleting major:', e);
+      updateSyncStatus('error', e?.message || 'Error deleting major');
     }
   },
 
@@ -460,8 +488,6 @@ export const instituteService = {
     const unsubFirestore = onSnapshot(
       collection(db, 'classes'),
       (snap) => {
-        if (wasWrittenLocallyJustNow(LS_KEYS.CLASSES)) return;
-
         if (!snap.empty) {
           const list = snap.docs.map((d) => {
             const data = d.data();
@@ -482,18 +508,21 @@ export const instituteService = {
           });
           setLocal(LS_KEYS.CLASSES, list);
           callback(list);
+          updateSyncStatus('synced', 'Classes synced in real-time');
         } else {
           const currentLocal = getLocal<Classroom>(LS_KEYS.CLASSES, []);
           if (currentLocal && currentLocal.length > 0) {
             commitInChunks(db, 'classes', currentLocal).catch(() => {});
             callback(currentLocal);
           }
+          updateSyncStatus('synced');
         }
       },
       (err) => {
         console.warn('Classes snapshot error (using local cache):', err);
         const currentLocal = getLocal<Classroom>(LS_KEYS.CLASSES, INITIAL_CLASSES);
         callback(currentLocal);
+        updateSyncStatus('offline', 'Using local cache (Classes)');
       }
     );
 
@@ -510,11 +539,14 @@ export const instituteService = {
     else local.push(cls);
     setLocal(LS_KEYS.CLASSES, local);
     notifyLocal(LS_KEYS.CLASSES, local);
+    updateSyncStatus('syncing', 'Saving class to cloud...');
 
     try {
       await setDoc(doc(db, 'classes', cls.id), sanitizeDoc(cls));
-    } catch (e) {
+      updateSyncStatus('synced', 'Class saved');
+    } catch (e: any) {
       console.warn('Error saving class:', e);
+      updateSyncStatus('error', e?.message || 'Error saving class');
     }
   },
 
@@ -522,11 +554,14 @@ export const instituteService = {
     const local = getLocal<Classroom>(LS_KEYS.CLASSES, INITIAL_CLASSES).filter((c) => c.id !== id);
     setLocal(LS_KEYS.CLASSES, local);
     notifyLocal(LS_KEYS.CLASSES, local);
+    updateSyncStatus('syncing', 'Deleting class...');
 
     try {
       await deleteDoc(doc(db, 'classes', id));
-    } catch (e) {
+      updateSyncStatus('synced', 'Class deleted');
+    } catch (e: any) {
       console.warn('Error deleting class:', e);
+      updateSyncStatus('error', e?.message || 'Error deleting class');
     }
   },
 
@@ -540,8 +575,6 @@ export const instituteService = {
     const unsubFirestore = onSnapshot(
       collection(db, 'teachers'),
       (snap) => {
-        if (wasWrittenLocallyJustNow(LS_KEYS.TEACHERS)) return;
-
         if (!snap.empty) {
           const list = snap.docs.map((d) => {
             const data = d.data();
@@ -561,6 +594,7 @@ export const instituteService = {
           });
           setLocal(LS_KEYS.TEACHERS, list);
           callback(list);
+          updateSyncStatus('synced', 'Teachers synced in real-time');
         } else {
           // If Firestore is empty, check if we have local teachers.
           // If so, preserve local data and back-sync to Firestore!
@@ -572,12 +606,14 @@ export const instituteService = {
             setLocal(LS_KEYS.TEACHERS, []);
             callback([]);
           }
+          updateSyncStatus('synced');
         }
       },
       (err) => {
         console.warn('Teachers snapshot error (using local cache):', err);
         const currentLocal = getLocal<Teacher>(LS_KEYS.TEACHERS, INITIAL_TEACHERS);
         callback(currentLocal);
+        updateSyncStatus('offline', 'Using local cache (Teachers)');
       }
     );
 
@@ -594,11 +630,14 @@ export const instituteService = {
     else local.push(teacher);
     setLocal(LS_KEYS.TEACHERS, local);
     notifyLocal(LS_KEYS.TEACHERS, local);
+    updateSyncStatus('syncing', 'Saving faculty member...');
 
     try {
       await setDoc(doc(db, 'teachers', teacher.id), sanitizeDoc(teacher));
-    } catch (e) {
+      updateSyncStatus('synced', 'Teacher saved');
+    } catch (e: any) {
       console.warn('Error saving teacher:', e);
+      updateSyncStatus('error', e?.message || 'Error saving teacher');
     }
   },
 
@@ -609,11 +648,14 @@ export const instituteService = {
     const merged = Array.from(map.values());
     setLocal(LS_KEYS.TEACHERS, merged);
     notifyLocal(LS_KEYS.TEACHERS, merged);
+    updateSyncStatus('syncing', `Uploading ${teachers.length} teachers to cloud...`);
 
     try {
       await commitInChunks(db, 'teachers', merged);
-    } catch (e) {
+      updateSyncStatus('synced', `${teachers.length} teachers synced to cloud`);
+    } catch (e: any) {
       console.warn('Error saving bulk teachers:', e);
+      updateSyncStatus('error', e?.message || 'Error syncing teachers');
     }
   },
 
@@ -621,27 +663,31 @@ export const instituteService = {
     const local = getLocal<Teacher>(LS_KEYS.TEACHERS, INITIAL_TEACHERS).filter((t) => t.id !== id);
     setLocal(LS_KEYS.TEACHERS, local);
     notifyLocal(LS_KEYS.TEACHERS, local);
+    updateSyncStatus('syncing', 'Deleting teacher...');
 
     try {
       await deleteDoc(doc(db, 'teachers', id));
-    } catch (e) {
+      updateSyncStatus('synced', 'Teacher deleted');
+    } catch (e: any) {
       console.warn('Error deleting teacher:', e);
+      updateSyncStatus('error', e?.message || 'Error deleting teacher');
     }
   },
 
   async deleteAllTeachers(): Promise<void> {
     setLocal(LS_KEYS.TEACHERS, []);
     notifyLocal(LS_KEYS.TEACHERS, []);
+    updateSyncStatus('syncing', 'Clearing all teachers...');
 
     try {
       const snap = await getDocs(collection(db, 'teachers'));
       if (!snap.empty) {
-        const batch = writeBatch(db);
-        snap.docs.forEach((d) => batch.delete(d.ref));
-        await batch.commit();
+        await deleteDocsInChunks(db, snap.docs);
       }
-    } catch (e) {
+      updateSyncStatus('synced', 'All teachers deleted');
+    } catch (e: any) {
       console.warn('Error deleting all teachers:', e);
+      updateSyncStatus('error', e?.message || 'Error clearing teachers');
     }
   },
 
@@ -655,8 +701,6 @@ export const instituteService = {
     const unsubFirestore = onSnapshot(
       collection(db, 'students'),
       (snap) => {
-        if (wasWrittenLocallyJustNow(LS_KEYS.STUDENTS)) return;
-
         if (!snap.empty) {
           const list = snap.docs.map((d) => {
             const data = d.data();
@@ -679,12 +723,14 @@ export const instituteService = {
               status: data.status || 'active',
               guardianPhone: data.guardianPhone || undefined,
               address: data.address || undefined,
+              photoUrl: data.photoUrl || undefined,
               createdAt: data.createdAt || new Date().toISOString(),
               updatedAt: data.updatedAt || new Date().toISOString()
             } as Student;
           });
           setLocal(LS_KEYS.STUDENTS, list);
           callback(list);
+          updateSyncStatus('synced', 'Students synced in real-time');
         } else {
           // If Firestore is empty, check if we have local students.
           // If so, preserve local data and back-sync to Firestore!
@@ -696,12 +742,14 @@ export const instituteService = {
             setLocal(LS_KEYS.STUDENTS, []);
             callback([]);
           }
+          updateSyncStatus('synced');
         }
       },
       (err) => {
         console.warn('Students snapshot error (using local cache):', err);
         const currentLocal = getLocal<Student>(LS_KEYS.STUDENTS, INITIAL_STUDENTS);
         callback(currentLocal);
+        updateSyncStatus('offline', 'Using local cache (Students)');
       }
     );
 
@@ -718,11 +766,14 @@ export const instituteService = {
     else local.push(student);
     setLocal(LS_KEYS.STUDENTS, local);
     notifyLocal(LS_KEYS.STUDENTS, local);
+    updateSyncStatus('syncing', 'Saving student to cloud...');
 
     try {
       await setDoc(doc(db, 'students', student.id), sanitizeDoc(student));
-    } catch (e) {
+      updateSyncStatus('synced', 'Student saved');
+    } catch (e: any) {
       console.warn('Error saving student:', e);
+      updateSyncStatus('error', e?.message || 'Error saving student');
     }
   },
 
@@ -733,11 +784,14 @@ export const instituteService = {
     const merged = Array.from(map.values());
     setLocal(LS_KEYS.STUDENTS, merged);
     notifyLocal(LS_KEYS.STUDENTS, merged);
+    updateSyncStatus('syncing', `Uploading ${students.length} students to cloud...`);
 
     try {
       await commitInChunks(db, 'students', merged);
-    } catch (e) {
+      updateSyncStatus('synced', `${students.length} students synced in cloud`);
+    } catch (e: any) {
       console.warn('Error saving bulk students:', e);
+      updateSyncStatus('error', e?.message || 'Error syncing bulk students');
     }
   },
 
@@ -745,27 +799,31 @@ export const instituteService = {
     const local = getLocal<Student>(LS_KEYS.STUDENTS, INITIAL_STUDENTS).filter((s) => s.id !== id);
     setLocal(LS_KEYS.STUDENTS, local);
     notifyLocal(LS_KEYS.STUDENTS, local);
+    updateSyncStatus('syncing', 'Deleting student...');
 
     try {
       await deleteDoc(doc(db, 'students', id));
-    } catch (e) {
+      updateSyncStatus('synced', 'Student deleted');
+    } catch (e: any) {
       console.warn('Error deleting student:', e);
+      updateSyncStatus('error', e?.message || 'Error deleting student');
     }
   },
 
   async deleteAllStudents(): Promise<void> {
     setLocal(LS_KEYS.STUDENTS, []);
     notifyLocal(LS_KEYS.STUDENTS, []);
+    updateSyncStatus('syncing', 'Clearing all students...');
 
     try {
       const snap = await getDocs(collection(db, 'students'));
       if (!snap.empty) {
-        const batch = writeBatch(db);
-        snap.docs.forEach((d) => batch.delete(d.ref));
-        await batch.commit();
+        await deleteDocsInChunks(db, snap.docs);
       }
-    } catch (e) {
+      updateSyncStatus('synced', 'All students deleted');
+    } catch (e: any) {
       console.warn('Error deleting all students:', e);
+      updateSyncStatus('error', e?.message || 'Error clearing students');
     }
   },
 
@@ -779,8 +837,6 @@ export const instituteService = {
     const unsubFirestore = onSnapshot(
       collection(db, 'attendance'),
       (snap) => {
-        if (wasWrittenLocallyJustNow(LS_KEYS.ATTENDANCE)) return;
-
         if (!snap.empty) {
           const list = snap.docs.map((d) => {
             const data = d.data();
@@ -798,18 +854,21 @@ export const instituteService = {
           });
           setLocal(LS_KEYS.ATTENDANCE, list);
           callback(list);
+          updateSyncStatus('synced', 'Attendance synced in real-time');
         } else {
           const currentLocal = getLocal<AttendanceRecord>(LS_KEYS.ATTENDANCE, []);
           if (currentLocal && currentLocal.length > 0) {
             commitInChunks(db, 'attendance', currentLocal).catch(() => {});
             callback(currentLocal);
           }
+          updateSyncStatus('synced');
         }
       },
       (err) => {
         console.warn('Attendance snapshot error (using local cache):', err);
         const currentLocal = getLocal<AttendanceRecord>(LS_KEYS.ATTENDANCE, INITIAL_ATTENDANCE);
         callback(currentLocal);
+        updateSyncStatus('offline', 'Using local cache (Attendance)');
       }
     );
 
@@ -826,11 +885,14 @@ export const instituteService = {
     const merged = Array.from(map.values());
     setLocal(LS_KEYS.ATTENDANCE, merged);
     notifyLocal(LS_KEYS.ATTENDANCE, merged);
+    updateSyncStatus('syncing', `Saving ${records.length} attendance records...`);
 
     try {
       await commitInChunks(db, 'attendance', merged);
-    } catch (e) {
+      updateSyncStatus('synced', 'Attendance records saved');
+    } catch (e: any) {
       console.warn('Error batch saving attendance:', e);
+      updateSyncStatus('error', e?.message || 'Error saving attendance');
     }
   },
 
@@ -844,8 +906,6 @@ export const instituteService = {
     const unsubFirestore = onSnapshot(
       collection(db, 'teacher_attendance'),
       (snap) => {
-        if (wasWrittenLocallyJustNow(LS_KEYS.TEACHER_ATT)) return;
-
         if (!snap.empty) {
           const list = snap.docs.map((d) => {
             const data = d.data();
@@ -863,18 +923,21 @@ export const instituteService = {
           });
           setLocal(LS_KEYS.TEACHER_ATT, list);
           callback(list);
+          updateSyncStatus('synced', 'Teacher attendance synced in real-time');
         } else {
           const currentLocal = getLocal<TeacherAttendance>(LS_KEYS.TEACHER_ATT, []);
           if (currentLocal && currentLocal.length > 0) {
             commitInChunks(db, 'teacher_attendance', currentLocal).catch(() => {});
             callback(currentLocal);
           }
+          updateSyncStatus('synced');
         }
       },
       (err) => {
         console.warn('Teacher attendance snapshot error (using local cache):', err);
         const currentLocal = getLocal<TeacherAttendance>(LS_KEYS.TEACHER_ATT, []);
         callback(currentLocal);
+        updateSyncStatus('offline', 'Using local cache (Teacher Attendance)');
       }
     );
 
@@ -891,11 +954,67 @@ export const instituteService = {
     const merged = Array.from(map.values());
     setLocal(LS_KEYS.TEACHER_ATT, merged);
     notifyLocal(LS_KEYS.TEACHER_ATT, merged);
+    updateSyncStatus('syncing', `Saving ${records.length} faculty attendance records...`);
 
     try {
       await commitInChunks(db, 'teacher_attendance', merged);
-    } catch (e) {
+      updateSyncStatus('synced', 'Faculty attendance saved');
+    } catch (e: any) {
       console.warn('Error batch saving teacher attendance:', e);
+      updateSyncStatus('error', e?.message || 'Error saving teacher attendance');
+    }
+  },
+
+  // --- FORCE RE-SYNC ALL DATA FROM FIRESTORE ---
+  async forceSyncAll(): Promise<{ success: boolean; message: string }> {
+    updateSyncStatus('syncing', 'Refreshing real-time data from Cloud Firestore...');
+    try {
+      const [majorsSnap, classesSnap, teachersSnap, studentsSnap, attSnap, teacherAttSnap] = await Promise.all([
+        getDocs(collection(db, 'majors')),
+        getDocs(collection(db, 'classes')),
+        getDocs(collection(db, 'teachers')),
+        getDocs(collection(db, 'students')),
+        getDocs(collection(db, 'attendance')),
+        getDocs(collection(db, 'teacher_attendance'))
+      ]);
+
+      if (!majorsSnap.empty) {
+        const list = majorsSnap.docs.map((d) => ({ id: d.id, ...d.data() }) as Major);
+        setLocal(LS_KEYS.MAJORS, list);
+        notifyLocal(LS_KEYS.MAJORS, list);
+      }
+      if (!classesSnap.empty) {
+        const list = classesSnap.docs.map((d) => ({ id: d.id, ...d.data() }) as Classroom);
+        setLocal(LS_KEYS.CLASSES, list);
+        notifyLocal(LS_KEYS.CLASSES, list);
+      }
+      if (!teachersSnap.empty) {
+        const list = teachersSnap.docs.map((d) => ({ id: d.id, ...d.data() }) as Teacher);
+        setLocal(LS_KEYS.TEACHERS, list);
+        notifyLocal(LS_KEYS.TEACHERS, list);
+      }
+      if (!studentsSnap.empty) {
+        const list = studentsSnap.docs.map((d) => ({ id: d.id, ...d.data() }) as Student);
+        setLocal(LS_KEYS.STUDENTS, list);
+        notifyLocal(LS_KEYS.STUDENTS, list);
+      }
+      if (!attSnap.empty) {
+        const list = attSnap.docs.map((d) => ({ id: d.id, ...d.data() }) as AttendanceRecord);
+        setLocal(LS_KEYS.ATTENDANCE, list);
+        notifyLocal(LS_KEYS.ATTENDANCE, list);
+      }
+      if (!teacherAttSnap.empty) {
+        const list = teacherAttSnap.docs.map((d) => ({ id: d.id, ...d.data() }) as TeacherAttendance);
+        setLocal(LS_KEYS.TEACHER_ATT, list);
+        notifyLocal(LS_KEYS.TEACHER_ATT, list);
+      }
+
+      updateSyncStatus('synced', 'Synchronized successfully with Cloud Firestore');
+      return { success: true, message: 'ទិន្នន័យត្រូវបានទាញយក និងធ្វើសមកាលកម្មរួចរាល់' };
+    } catch (err: any) {
+      console.warn('Force sync error:', err);
+      updateSyncStatus('error', err?.message || 'Sync failed');
+      return { success: false, message: 'មិនអាចភ្ជាប់ទៅកាន់ Cloud បានទេ: ' + (err?.message || '') };
     }
   },
 
@@ -1002,53 +1121,49 @@ export const instituteService = {
     teacherAttendance?: TeacherAttendance[];
   }): Promise<void> {
     const { students, teachers, classes, majors, attendance, teacherAttendance } = payload;
+    updateSyncStatus('syncing', 'Restoring database from backup...');
 
-    if (students && Array.isArray(students)) {
-      setLocal(LS_KEYS.STUDENTS, students);
-      notifyLocal(LS_KEYS.STUDENTS, students);
-      const batch = writeBatch(db);
-      for (const s of students) batch.set(doc(db, 'students', s.id), s);
-      await batch.commit().catch((e) => console.warn(e));
-    }
+    try {
+      if (students && Array.isArray(students)) {
+        setLocal(LS_KEYS.STUDENTS, students);
+        notifyLocal(LS_KEYS.STUDENTS, students);
+        await commitInChunks(db, 'students', students);
+      }
 
-    if (teachers && Array.isArray(teachers)) {
-      setLocal(LS_KEYS.TEACHERS, teachers);
-      notifyLocal(LS_KEYS.TEACHERS, teachers);
-      const batch = writeBatch(db);
-      for (const t of teachers) batch.set(doc(db, 'teachers', t.id), t);
-      await batch.commit().catch((e) => console.warn(e));
-    }
+      if (teachers && Array.isArray(teachers)) {
+        setLocal(LS_KEYS.TEACHERS, teachers);
+        notifyLocal(LS_KEYS.TEACHERS, teachers);
+        await commitInChunks(db, 'teachers', teachers);
+      }
 
-    if (classes && Array.isArray(classes)) {
-      setLocal(LS_KEYS.CLASSES, classes);
-      notifyLocal(LS_KEYS.CLASSES, classes);
-      const batch = writeBatch(db);
-      for (const c of classes) batch.set(doc(db, 'classes', c.id), c);
-      await batch.commit().catch((e) => console.warn(e));
-    }
+      if (classes && Array.isArray(classes)) {
+        setLocal(LS_KEYS.CLASSES, classes);
+        notifyLocal(LS_KEYS.CLASSES, classes);
+        await commitInChunks(db, 'classes', classes);
+      }
 
-    if (majors && Array.isArray(majors)) {
-      setLocal(LS_KEYS.MAJORS, majors);
-      notifyLocal(LS_KEYS.MAJORS, majors);
-      const batch = writeBatch(db);
-      for (const m of majors) batch.set(doc(db, 'majors', m.id), m);
-      await batch.commit().catch((e) => console.warn(e));
-    }
+      if (majors && Array.isArray(majors)) {
+        setLocal(LS_KEYS.MAJORS, majors);
+        notifyLocal(LS_KEYS.MAJORS, majors);
+        await commitInChunks(db, 'majors', majors);
+      }
 
-    if (attendance && Array.isArray(attendance)) {
-      setLocal(LS_KEYS.ATTENDANCE, attendance);
-      notifyLocal(LS_KEYS.ATTENDANCE, attendance);
-      const batch = writeBatch(db);
-      for (const a of attendance) batch.set(doc(db, 'attendance', a.id), a);
-      await batch.commit().catch((e) => console.warn(e));
-    }
+      if (attendance && Array.isArray(attendance)) {
+        setLocal(LS_KEYS.ATTENDANCE, attendance);
+        notifyLocal(LS_KEYS.ATTENDANCE, attendance);
+        await commitInChunks(db, 'attendance', attendance);
+      }
 
-    if (teacherAttendance && Array.isArray(teacherAttendance)) {
-      setLocal(LS_KEYS.TEACHER_ATT, teacherAttendance);
-      notifyLocal(LS_KEYS.TEACHER_ATT, teacherAttendance);
-      const batch = writeBatch(db);
-      for (const ta of teacherAttendance) batch.set(doc(db, 'teacher_attendance', ta.id), ta);
-      await batch.commit().catch((e) => console.warn(e));
+      if (teacherAttendance && Array.isArray(teacherAttendance)) {
+        setLocal(LS_KEYS.TEACHER_ATT, teacherAttendance);
+        notifyLocal(LS_KEYS.TEACHER_ATT, teacherAttendance);
+        await commitInChunks(db, 'teacher_attendance', teacherAttendance);
+      }
+
+      updateSyncStatus('synced', 'Database restored and synchronized with Cloud Firestore');
+    } catch (err: any) {
+      console.warn('Restore error:', err);
+      updateSyncStatus('error', err?.message || 'Restore error');
     }
   },
 

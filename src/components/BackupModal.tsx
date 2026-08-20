@@ -25,6 +25,7 @@ interface BackupModalProps {
   user: AppUser | null;
   showToast: (text: string, type?: 'success' | 'info' | 'error') => void;
   onRefreshData?: () => void;
+  isReadOnly?: boolean;
 }
 
 export const BackupModal: React.FC<BackupModalProps> = ({
@@ -32,8 +33,28 @@ export const BackupModal: React.FC<BackupModalProps> = ({
   onClose,
   user,
   showToast,
-  onRefreshData
+  onRefreshData,
+  isReadOnly = false
 }) => {
+  const isGuestReadOnly = isReadOnly || user?.isAnonymous || false;
+  const [isSyncingCloud, setIsSyncingCloud] = useState(false);
+
+  const handleForceCloudSync = async () => {
+    if (isGuestReadOnly) {
+      showToast('គណនីភ្ញៀវមិនអាចធ្វើសមកាលកម្មទិន្នន័យបានទេ (Read-Only Mode)!', 'info');
+      return;
+    }
+    setIsSyncingCloud(true);
+    try {
+      const res = await instituteService.forceSyncAll();
+      showToast(res.message, res.success ? 'success' : 'error');
+      if (onRefreshData) onRefreshData();
+    } catch (e: any) {
+      showToast('សមកាលកម្មទិន្នន័យបានបរាជ័យ', 'error');
+    } finally {
+      setIsSyncingCloud(false);
+    }
+  };
   const [cloudBackups, setCloudBackups] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isBackingUp, setIsBackingUp] = useState(false);
@@ -59,6 +80,10 @@ export const BackupModal: React.FC<BackupModalProps> = ({
   };
 
   const handleCreateCloudBackup = async () => {
+    if (isGuestReadOnly) {
+      showToast('គណនីភ្ញៀវមិនអាចបង្កើត Cloud Backup បានទេ (Read-Only Mode)!', 'info');
+      return;
+    }
     setIsBackingUp(true);
     try {
       await instituteService.createCloudBackup(user);
@@ -83,6 +108,10 @@ export const BackupModal: React.FC<BackupModalProps> = ({
   };
 
   const handleRestoreCloud = async (b: any) => {
+    if (isGuestReadOnly) {
+      showToast('គណនីភ្ញៀវមិនអាចស្តារទិន្នន័យ (Restore) បានទេ (Read-Only Mode)!', 'info');
+      return;
+    }
     const confirm = window.confirm(
       `តើអ្នកពិតជាចង់ទាញយកទិន្នន័យពី Cloud Backup (${new Date(b.timestamp).toLocaleString('km-KH')}) មកវិញមែនទេ?\n\nទិន្នន័យបច្ចុប្បន្ននឹងត្រូវបានជំនួសដោយទិន្នន័យពី Backup នេះ។`
     );
@@ -104,6 +133,10 @@ export const BackupModal: React.FC<BackupModalProps> = ({
   };
 
   const handleDeleteCloud = async (backupId: string) => {
+    if (isGuestReadOnly) {
+      showToast('គណនីភ្ញៀវមិនអាចលុប Cloud Backup បានទេ (Read-Only Mode)!', 'info');
+      return;
+    }
     const confirm = window.confirm('តើអ្នកពិតជាចង់លុប Cloud Backup នេះមែនទេ?');
     if (!confirm) return;
 
@@ -118,6 +151,10 @@ export const BackupModal: React.FC<BackupModalProps> = ({
   };
 
   const handleFileImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (isGuestReadOnly) {
+      showToast('គណនីភ្ញៀវមិនអាចបញ្ចូលទិន្នន័យពី Backup បានទេ (Read-Only Mode)!', 'info');
+      return;
+    }
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -155,9 +192,16 @@ export const BackupModal: React.FC<BackupModalProps> = ({
               <Database className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-bold text-sm sm:text-base">
-                មជ្ឈមណ្ឌល Backup & Cloud Sync
-              </h3>
+              <div className="flex items-center gap-2">
+                <h3 className="font-bold text-sm sm:text-base">
+                  មជ្ឈមណ្ឌល Backup & Cloud Sync
+                </h3>
+                {isGuestReadOnly && (
+                  <span className="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 border border-amber-400/30 text-[10px] font-bold">
+                    Read-Only
+                  </span>
+                )}
+              </div>
               <p className="text-xs text-emerald-200/90">
                 រក្សាទុក និងស្តារទិន្នន័យប្រព័ន្ធលើ Cloud Firestore និងក្នុងម៉ាស៊ីន (Local)
               </p>
@@ -172,6 +216,16 @@ export const BackupModal: React.FC<BackupModalProps> = ({
         </div>
 
         <div className="p-6 space-y-6 overflow-y-auto flex-1">
+          {/* Guest Read-Only Banner */}
+          {isGuestReadOnly && (
+            <div className="p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-amber-900 dark:text-amber-200 text-xs flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+              <span>
+                របៀបភ្ញៀវ (Read-Only Mode): អ្នកអាចទាញយក Backup JSON លើកុំព្យូទ័របាន ប៉ុន្តែមុខងារបង្កើត Backup លើ Cloud, ស្តារ (Restore), លុប និង Sync ត្រូវបានបិទសម្រាប់គណនីភ្ញៀវ។
+              </span>
+            </div>
+          )}
+
           {/* Quick Actions Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Action 1: Cloud Backup */}
@@ -188,11 +242,17 @@ export const BackupModal: React.FC<BackupModalProps> = ({
               <button
                 type="button"
                 onClick={handleCreateCloudBackup}
-                disabled={isBackingUp}
-                className="w-full py-2 px-3 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer disabled:opacity-50"
+                disabled={isBackingUp || isGuestReadOnly}
+                className="w-full py-2 px-3 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Cloud className="w-3.5 h-3.5" />
-                <span>{isBackingUp ? 'កំពុងរក្សាទុក...' : 'រក្សាទុកលើ Cloud ឥឡូវនេះ'}</span>
+                <span>
+                  {isGuestReadOnly
+                    ? 'បិទសម្រាប់ភ្ញៀវ (Disabled for Guest)'
+                    : isBackingUp
+                    ? 'កំពុងរក្សាទុក...'
+                    : 'រក្សាទុកលើ Cloud ឥឡូវនេះ'}
+                </span>
               </button>
             </div>
 
@@ -218,6 +278,35 @@ export const BackupModal: React.FC<BackupModalProps> = ({
             </div>
           </div>
 
+          {/* Real-time Cloud Sync Trigger */}
+          <div className="p-4 rounded-2xl border border-emerald-200 dark:border-emerald-800/60 bg-emerald-50/70 dark:bg-emerald-950/30 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-emerald-100 dark:bg-emerald-900/60 flex items-center justify-center text-emerald-700 dark:text-emerald-300">
+                <RefreshCw className={`w-4 h-4 ${isSyncingCloud ? 'animate-spin' : ''}`} />
+              </div>
+              <div>
+                <h4 className="font-bold text-xs text-emerald-950 dark:text-emerald-200 flex items-center gap-2">
+                  <span>ធ្វើសមកាលកម្មទិន្នន័យផ្ទាល់ (Real-Time Sync)</span>
+                  <span className="text-[10px] bg-emerald-200 dark:bg-emerald-800 text-emerald-900 dark:text-emerald-100 font-bold px-1.5 py-0.5 rounded-full">
+                    Live
+                  </span>
+                </h4>
+                <p className="text-[10.5px] text-zinc-600 dark:text-zinc-400">
+                  ទាញយក និងបញ្ជូនបច្ចុប្បន្នភាពទិន្នន័យចុងក្រោយបង្អស់រវាងម៉ាស៊ីន និង Cloud Firestore
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={handleForceCloudSync}
+              disabled={isSyncingCloud || isGuestReadOnly}
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs transition-colors shadow-xs cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isSyncingCloud ? 'animate-spin' : ''}`} />
+              <span>{isSyncingCloud ? 'កំពុងធ្វើសមកាលកម្ម...' : 'Sync ទិន្នន័យឥឡូវនេះ'}</span>
+            </button>
+          </div>
+
           {/* Local File Restore Option */}
           <div className="p-4 rounded-2xl border border-zinc-200 dark:border-zinc-700/60 bg-zinc-50 dark:bg-[#182620] flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
@@ -229,21 +318,29 @@ export const BackupModal: React.FC<BackupModalProps> = ({
                   បញ្ចូលទិន្នន័យពីឯកសារ Backup ក្នុងកុំព្យូទ័រ
                 </h4>
                 <p className="text-[10.5px] text-zinc-500 dark:text-zinc-400">
-                  ជ្រើសរើសឯកសារ Backup .json ដើម្បីស្តារទិន្នន័យឡើងវិញ
+                  {isGuestReadOnly
+                    ? 'មុខងារបញ្ចូលទិន្នន័យឡើងវិញត្រូវបានបិទសម្រាប់គណនីភ្ញៀវ'
+                    : 'ជ្រើសរើសឯកសារ Backup .json ដើម្បីស្តារទិន្នន័យឡើងវិញ'}
                 </p>
               </div>
             </div>
-            <label className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-900 dark:bg-zinc-700 dark:hover:bg-zinc-600 text-white font-bold text-xs cursor-pointer transition-colors shadow-xs">
-              <Upload className="w-3.5 h-3.5" />
-              <span>{importingFile ? 'កំពុងបញ្ចូល...' : 'បញ្ចូលឯកសារ'}</span>
-              <input
-                type="file"
-                accept=".json"
-                onChange={handleFileImport}
-                disabled={importingFile}
-                className="hidden"
-              />
-            </label>
+            {!isGuestReadOnly ? (
+              <label className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-900 dark:bg-zinc-700 dark:hover:bg-zinc-600 text-white font-bold text-xs cursor-pointer transition-colors shadow-xs">
+                <Upload className="w-3.5 h-3.5" />
+                <span>{importingFile ? 'កំពុងបញ្ចូល...' : 'បញ្ចូលឯកសារ'}</span>
+                <input
+                  type="file"
+                  accept=".json"
+                  onChange={handleFileImport}
+                  disabled={importingFile}
+                  className="hidden"
+                />
+              </label>
+            ) : (
+              <span className="px-3 py-1.5 rounded-xl bg-zinc-200 dark:bg-zinc-800 text-zinc-500 text-xs font-bold">
+                បានបិទ (Locked)
+              </span>
+            )}
           </div>
 
           {/* Cloud Backups Snapshot List */}
@@ -304,23 +401,31 @@ export const BackupModal: React.FC<BackupModalProps> = ({
                       </div>
 
                       <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => handleRestoreCloud(b)}
-                          disabled={isRestoring}
-                          className="px-2.5 py-1 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-[11px] flex items-center gap-1 shadow-xs transition-colors cursor-pointer disabled:opacity-50"
-                        >
-                          <CloudDownload className="w-3 h-3" />
-                          <span>{isRestoring ? 'កំពុងស្តារ...' : 'Restore'}</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteCloud(b.id)}
-                          title="លុប Backup នេះ"
-                          className="p-1 rounded-lg text-zinc-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+                        {!isGuestReadOnly ? (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => handleRestoreCloud(b)}
+                              disabled={isRestoring}
+                              className="px-2.5 py-1 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-[11px] flex items-center gap-1 shadow-xs transition-colors cursor-pointer disabled:opacity-50"
+                            >
+                              <CloudDownload className="w-3 h-3" />
+                              <span>{isRestoring ? 'កំពុងស្តារ...' : 'Restore'}</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteCloud(b.id)}
+                              title="លុប Backup នេះ"
+                              className="p-1 rounded-lg text-zinc-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </>
+                        ) : (
+                          <span className="text-[11px] text-zinc-400 font-medium px-2 py-0.5 rounded-lg bg-zinc-100 dark:bg-zinc-800">
+                            បានរក្សាទុក
+                          </span>
+                        )}
                       </div>
                     </div>
                   );

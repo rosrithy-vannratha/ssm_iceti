@@ -193,6 +193,8 @@ export default function App() {
     );
   }
 
+  const isReadOnly = user?.isAnonymous || false;
+
   return (
     <div className="min-h-screen bg-[#f7faf8] dark:bg-[#0c1410] text-zinc-900 dark:text-zinc-100 flex flex-col selection:bg-emerald-600 selection:text-white font-sans antialiased transition-colors">
       {/* Navigation Bar */}
@@ -218,11 +220,20 @@ export default function App() {
             majors={majors}
             attendance={attendance}
             setActiveTab={setActiveTab}
+            isReadOnly={isReadOnly}
             onOpenAddStudent={() => {
+              if (isReadOnly) {
+                showToast('គណនីភ្ញៀវមិនអាចបន្ថែមទិន្នន័យបានទេ (Read-Only Mode)!', 'info');
+                return;
+              }
               setActiveTab('students');
               setIsAddStudentOpen(true);
             }}
             onOpenAddClass={() => {
+              if (isReadOnly) {
+                showToast('គណនីភ្ញៀវមិនអាចបន្ថែមទិន្នន័យបានទេ (Read-Only Mode)!', 'info');
+                return;
+              }
               setActiveTab('classes');
               setIsAddClassOpen(true);
             }}
@@ -237,6 +248,7 @@ export default function App() {
             isAddModalOpen={isAddStudentOpen}
             onCloseAddModal={() => setIsAddStudentOpen(false)}
             showToast={showToast}
+            isReadOnly={isReadOnly}
           />
         )}
 
@@ -246,11 +258,16 @@ export default function App() {
             classes={classes}
             attendance={attendance}
             showToast={showToast}
+            isReadOnly={isReadOnly}
           />
         )}
 
         {activeTab === 'teachers' && (
-          <TeachersView teachers={teachers} showToast={showToast} />
+          <TeachersView
+            teachers={teachers}
+            showToast={showToast}
+            isReadOnly={isReadOnly}
+          />
         )}
 
         {activeTab === 'teacher_attendance' && (
@@ -258,6 +275,7 @@ export default function App() {
             teachers={teachers}
             attendance={teacherAttendance}
             showToast={showToast}
+            isReadOnly={isReadOnly}
           />
         )}
 
@@ -270,6 +288,7 @@ export default function App() {
             isAddModalOpen={isAddClassOpen}
             onCloseAddModal={() => setIsAddClassOpen(false)}
             showToast={showToast}
+            isReadOnly={isReadOnly}
           />
         )}
 
@@ -279,6 +298,7 @@ export default function App() {
             classes={classes}
             students={students}
             showToast={showToast}
+            isReadOnly={isReadOnly}
           />
         )}
 
@@ -324,6 +344,7 @@ export default function App() {
         onClose={() => setIsBackupModalOpen(false)}
         user={user}
         showToast={showToast}
+        isReadOnly={isReadOnly}
         onRefreshData={() => {
           // Re-subscribe or state will automatically update from snapshot
         }}

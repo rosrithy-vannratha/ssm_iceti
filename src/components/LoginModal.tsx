@@ -121,10 +121,10 @@ export const LoginModal: React.FC<LoginModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="bg-white rounded-3xl max-w-md w-full border border-emerald-900/10 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
+      <div className="bg-white dark:bg-[#121f19] rounded-3xl max-w-md w-full border border-emerald-900/10 dark:border-emerald-800/40 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         {/* Header */}
-        <div className="bg-emerald-850 p-6 text-white text-center relative">
+        <div className="bg-gradient-to-r from-emerald-800 to-emerald-900 dark:from-emerald-950 dark:to-[#0f1e17] p-6 text-white text-center relative border-b border-emerald-700/40">
           <button
             onClick={onClose}
             className="absolute right-4 top-4 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white/80 hover:text-white transition-colors cursor-pointer"
@@ -134,16 +134,16 @@ export const LoginModal: React.FC<LoginModalProps> = ({
           <div className="w-12 h-12 rounded-2xl bg-white/15 border border-white/20 flex items-center justify-center mx-auto mb-2 text-emerald-300 shadow-xs">
             <GraduationCap className="w-6 h-6" />
           </div>
-          <h3 className="font-bold text-base tracking-wide">
+          <h3 className="font-bold text-base tracking-wide text-white">
             ចូលប្រើប្រព័ន្ធវិទ្យាស្ថាន
           </h3>
-          <p className="text-xs text-emerald-200/90 mt-0.5">
+          <p className="text-xs text-emerald-200/90 mt-0.5 font-medium">
             International Chinese Education & Teachers Institute
           </p>
         </div>
 
         {/* Tab Selection */}
-        <div className="grid grid-cols-3 border-b border-zinc-100 p-1.5 bg-zinc-50/80">
+        <div className="grid grid-cols-3 border-b border-zinc-100 dark:border-zinc-800 p-1.5 bg-zinc-100/70 dark:bg-[#0c1511]">
           <button
             type="button"
             onClick={() => {
@@ -152,8 +152,8 @@ export const LoginModal: React.FC<LoginModalProps> = ({
             }}
             className={`py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
               activeTab === 'google'
-                ? 'bg-white text-emerald-800 shadow-xs'
-                : 'text-zinc-500 hover:text-zinc-800'
+                ? 'bg-white dark:bg-[#182a22] text-emerald-800 dark:text-emerald-300 shadow-xs'
+                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
             }`}
           >
             Google Login
@@ -166,8 +166,8 @@ export const LoginModal: React.FC<LoginModalProps> = ({
             }}
             className={`py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
               activeTab === 'email'
-                ? 'bg-white text-emerald-800 shadow-xs'
-                : 'text-zinc-500 hover:text-zinc-800'
+                ? 'bg-white dark:bg-[#182a22] text-emerald-800 dark:text-emerald-300 shadow-xs'
+                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
             }`}
           >
             អ៊ីមែល (Email)
@@ -180,8 +180,8 @@ export const LoginModal: React.FC<LoginModalProps> = ({
             }}
             className={`py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
               activeTab === 'quick'
-                ? 'bg-white text-emerald-800 shadow-xs'
-                : 'text-zinc-500 hover:text-zinc-800'
+                ? 'bg-white dark:bg-[#182a22] text-emerald-800 dark:text-emerald-300 shadow-xs'
+                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
             }`}
           >
             ចូលរហ័ស (Quick)
@@ -190,9 +190,9 @@ export const LoginModal: React.FC<LoginModalProps> = ({
 
         {/* Error Alert */}
         {errorMessage && (
-          <div className="mx-6 mt-4 p-3 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-start gap-2">
-            <AlertCircle className="w-4 h-4 shrink-0 text-rose-600 mt-0.5" />
-            <div className="leading-relaxed">
+          <div className="mx-6 mt-4 p-3 rounded-2xl bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800/60 text-rose-800 dark:text-rose-300 text-xs flex items-start gap-2">
+            <AlertCircle className="w-4 h-4 shrink-0 text-rose-600 dark:text-rose-400 mt-0.5" />
+            <div className="leading-relaxed font-medium">
               <span>{errorMessage}</span>
             </div>
           </div>
@@ -202,7 +202,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
           {/* TAB 1: GOOGLE LOGIN */}
           {activeTab === 'google' && (
             <div className="space-y-4 text-center">
-              <p className="text-xs text-zinc-600">
+              <p className="text-xs text-zinc-600 dark:text-zinc-300 font-medium">
                 ចូលប្រើប្រាស់ដោយផ្ទាល់ជាមួយគណនី Google ឬ Gmail របស់អ្នកដើម្បីធ្វើសមកាលកម្មទិន្នន័យលើ Cloud
               </p>
 
@@ -210,7 +210,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                 type="button"
                 onClick={handleGoogleLogin}
                 disabled={isLoading}
-                className="w-full py-3 px-4 rounded-2xl bg-white hover:bg-zinc-50 text-zinc-800 font-bold text-xs border border-zinc-300 shadow-sm flex items-center justify-center gap-3 transition-all cursor-pointer hover:border-zinc-400 disabled:opacity-50"
+                className="w-full py-3 px-4 rounded-2xl bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-100 font-bold text-xs border border-zinc-300 dark:border-zinc-700 shadow-sm flex items-center justify-center gap-3 transition-all cursor-pointer hover:border-zinc-400 disabled:opacity-50"
               >
                 <svg className="w-4 h-4" viewBox="0 0 24 24">
                   <path
@@ -233,12 +233,12 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                 <span>{isLoading ? 'កំពុងភ្ជាប់ Google...' : 'បន្តជាមួយ Google (Sign in with Google)'}</span>
               </button>
 
-              <div className="bg-emerald-50/80 border border-emerald-200/70 rounded-2xl p-3 text-left space-y-1">
-                <p className="text-[11px] font-bold text-emerald-900 flex items-center gap-1.5">
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
+              <div className="bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200/70 dark:border-emerald-800/50 rounded-2xl p-3 text-left space-y-1">
+                <p className="text-[11px] font-bold text-emerald-900 dark:text-emerald-300 flex items-center gap-1.5">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
                   <span>សុវត្ថិភាពខ្ពស់ និងរហ័ស</span>
                 </p>
-                <p className="text-[10.5px] text-emerald-800/90 leading-relaxed">
+                <p className="text-[10.5px] text-emerald-800/90 dark:text-emerald-300/80 leading-relaxed font-medium">
                   ប្រសិនបើ Browser បិទផ្ទាំង Popup សូមជ្រើសរើសផ្ទាំង <strong>"ចូលរហ័ស (Quick)"</strong> ដើម្បីចូលប្រើភ្លាមៗដោយពុំចាំបាច់រង់ចាំ។
                 </p>
               </div>
@@ -250,7 +250,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
             <form onSubmit={handleEmailSubmit} className="space-y-3">
               {isRegister && (
                 <div>
-                  <label className="block text-xs font-bold text-zinc-700 mb-1">
+                  <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
                     ឈ្មោះពេញ (Full Name) *
                   </label>
                   <div className="relative">
@@ -261,14 +261,14 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                       value={displayName}
                       onChange={(e) => setDisplayName(e.target.value)}
                       placeholder="ឧ. សុខ ចាន់ថា"
-                      className="w-full pl-9 pr-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl text-xs focus:bg-white focus:border-emerald-500 outline-hidden"
+                      className="w-full pl-9 pr-3 py-2 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl text-xs focus:bg-white dark:focus:bg-zinc-950 focus:border-emerald-500 outline-hidden"
                     />
                   </div>
                 </div>
               )}
 
               <div>
-                <label className="block text-xs font-bold text-zinc-700 mb-1">
+                <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
                   អ៊ីមែល (Email) *
                 </label>
                 <div className="relative">
@@ -279,13 +279,13 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="user@cpi.edu.kh ឬ gmail.com"
-                    className="w-full pl-9 pr-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl text-xs focus:bg-white focus:border-emerald-500 outline-hidden"
+                    className="w-full pl-9 pr-3 py-2 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl text-xs focus:bg-white dark:focus:bg-zinc-950 focus:border-emerald-500 outline-hidden"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-zinc-700 mb-1">
+                <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
                   ពាក្យសម្ងាត់ (Password) *
                 </label>
                 <div className="relative">
@@ -296,7 +296,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full pl-9 pr-3 py-2 bg-zinc-50 border border-zinc-200 rounded-xl text-xs focus:bg-white focus:border-emerald-500 outline-hidden"
+                    className="w-full pl-9 pr-3 py-2 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl text-xs focus:bg-white dark:focus:bg-zinc-950 focus:border-emerald-500 outline-hidden"
                   />
                 </div>
               </div>
@@ -313,14 +313,14 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                   : 'ចូលគណនី (Sign In)'}
               </button>
 
-              <div className="text-center pt-2 border-t border-zinc-100">
+              <div className="text-center pt-2 border-t border-zinc-100 dark:border-zinc-800">
                 <button
                   type="button"
                   onClick={() => {
                     setIsRegister(!isRegister);
                     setErrorMessage(null);
                   }}
-                  className="text-xs text-emerald-700 hover:text-emerald-900 font-semibold cursor-pointer"
+                  className="text-xs text-emerald-700 dark:text-emerald-400 hover:text-emerald-900 dark:hover:text-emerald-300 font-bold cursor-pointer"
                 >
                   {isRegister
                     ? 'មានគណនីរួចហើយ? ចូលគណនីនៅទីនេះ'
@@ -333,7 +333,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
           {/* TAB 3: QUICK ACCESS (ONE-CLICK LOGIN) */}
           {activeTab === 'quick' && (
             <div className="space-y-2.5">
-              <p className="text-xs text-zinc-600 mb-3">
+              <p className="text-xs text-zinc-600 dark:text-zinc-300 mb-3 font-medium">
                 ជ្រើសរើសតួនាទីដើម្បីចូលប្រើប្រព័ន្ធភ្លាមៗដោយមិនចាំបាច់បំពេញពាក្យសម្ងាត់៖
               </p>
 
@@ -347,22 +347,22 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                     'admin@ici.edu.kh'
                   )
                 }
-                className="w-full p-3 rounded-2xl border border-emerald-200 bg-emerald-50/50 hover:bg-emerald-100/70 text-left flex items-center justify-between transition-all cursor-pointer group"
+                className="w-full p-3 rounded-2xl border border-emerald-200 dark:border-emerald-800/50 bg-emerald-50/50 dark:bg-emerald-950/30 hover:bg-emerald-100/70 dark:hover:bg-emerald-900/50 text-left flex items-center justify-between transition-all cursor-pointer group"
               >
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-xl bg-emerald-700 text-white flex items-center justify-center font-bold text-xs shadow-xs">
                     <ShieldCheck className="w-5 h-5" />
                   </div>
                   <div>
-                    <h4 className="font-bold text-xs text-zinc-900 group-hover:text-emerald-900">
+                    <h4 className="font-bold text-xs text-zinc-900 dark:text-zinc-100 group-hover:text-emerald-900 dark:group-hover:text-emerald-300">
                       គណៈគ្រប់គ្រង (Admin)
                     </h4>
-                    <p className="text-[10.5px] text-zinc-500">
+                    <p className="text-[10.5px] text-zinc-500 dark:text-zinc-400">
                       សិទ្ធិពេញលេញលើការគ្រប់គ្រង និងទិន្នន័យ
                     </p>
                   </div>
                 </div>
-                <LogIn className="w-4 h-4 text-emerald-700 opacity-70 group-hover:opacity-100" />
+                <LogIn className="w-4 h-4 text-emerald-700 dark:text-emerald-400 opacity-70 group-hover:opacity-100" />
               </button>
 
               {/* Faculty / Teacher */}
@@ -375,22 +375,22 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                     'sokha.long@ici.edu.kh'
                   )
                 }
-                className="w-full p-3 rounded-2xl border border-blue-200 bg-blue-50/50 hover:bg-blue-100/70 text-left flex items-center justify-between transition-all cursor-pointer group"
+                className="w-full p-3 rounded-2xl border border-blue-200 dark:border-blue-800/50 bg-blue-50/50 dark:bg-blue-950/30 hover:bg-blue-100/70 dark:hover:bg-blue-900/50 text-left flex items-center justify-between transition-all cursor-pointer group"
               >
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-xl bg-blue-700 text-white flex items-center justify-center font-bold text-xs shadow-xs">
                     <UserCheck className="w-5 h-5" />
                   </div>
                   <div>
-                    <h4 className="font-bold text-xs text-zinc-900 group-hover:text-blue-900">
+                    <h4 className="font-bold text-xs text-zinc-900 dark:text-zinc-100 group-hover:text-blue-900 dark:group-hover:text-blue-300">
                       សាស្ត្រាចារ្យ (Faculty / Teacher)
                     </h4>
-                    <p className="text-[10.5px] text-zinc-500">
+                    <p className="text-[10.5px] text-zinc-500 dark:text-zinc-400">
                       កត់ត្រាវត្តមាន គ្រប់គ្រងថ្នាក់ និងមើលបញ្ជីនិស្សិត
                     </p>
                   </div>
                 </div>
-                <LogIn className="w-4 h-4 text-blue-700 opacity-70 group-hover:opacity-100" />
+                <LogIn className="w-4 h-4 text-blue-700 dark:text-blue-400 opacity-70 group-hover:opacity-100" />
               </button>
 
               {/* Registrar / Staff */}
@@ -403,22 +403,61 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                     'attendance@ici.edu.kh'
                   )
                 }
-                className="w-full p-3 rounded-2xl border border-amber-200 bg-amber-50/50 hover:bg-amber-100/70 text-left flex items-center justify-between transition-all cursor-pointer group"
+                className="w-full p-3 rounded-2xl border border-amber-200 dark:border-amber-800/50 bg-amber-50/50 dark:bg-amber-950/30 hover:bg-amber-100/70 dark:hover:bg-amber-900/50 text-left flex items-center justify-between transition-all cursor-pointer group"
               >
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-xl bg-amber-600 text-white flex items-center justify-center font-bold text-xs shadow-xs">
                     <GraduationCap className="w-5 h-5" />
                   </div>
                   <div>
-                    <h4 className="font-bold text-xs text-zinc-900 group-hover:text-amber-900">
+                    <h4 className="font-bold text-xs text-zinc-900 dark:text-zinc-100 group-hover:text-amber-900 dark:group-hover:text-amber-300">
                       មន្ត្រីកត់ត្រា (Registrar)
                     </h4>
-                    <p className="text-[10.5px] text-zinc-500">
+                    <p className="text-[10.5px] text-zinc-500 dark:text-zinc-400">
                       កត់ត្រាវត្តមានប្រចាំថ្ងៃ និងតាមដានរបាយការណ៍
                     </p>
                   </div>
                 </div>
-                <LogIn className="w-4 h-4 text-amber-700 opacity-70 group-hover:opacity-100" />
+                <LogIn className="w-4 h-4 text-amber-700 dark:text-amber-400 opacity-70 group-hover:opacity-100" />
+              </button>
+
+              {/* Guest / Visitor (Read-Only) */}
+              <button
+                type="button"
+                onClick={() => {
+                  const guestUser: AppUser = {
+                    uid: 'guest-' + Date.now(),
+                    displayName: 'ភ្ញៀវ (Guest)',
+                    email: 'guest@ici.edu.kh',
+                    photoURL: null,
+                    role: 'Guest',
+                    isAnonymous: true
+                  };
+                  onSuccess(guestUser);
+                  onClose();
+                  showToast('បានចូលមើលជាភ្ញៀវ (Guest Mode - Read Only)', 'info');
+                }}
+                className="w-full p-3 rounded-2xl border border-purple-200 dark:border-purple-800/50 bg-purple-50/50 dark:bg-purple-950/30 hover:bg-purple-100/70 dark:hover:bg-purple-900/50 text-left flex items-center justify-between transition-all cursor-pointer group"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-purple-700 text-white flex items-center justify-center font-bold text-xs shadow-xs">
+                    <Sparkles className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-1.5">
+                      <h4 className="font-bold text-xs text-zinc-900 dark:text-zinc-100 group-hover:text-purple-900 dark:group-hover:text-purple-300">
+                        ចូលមើលជាភ្ញៀវ (Explore as Guest)
+                      </h4>
+                      <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-purple-200 dark:bg-purple-900/80 text-purple-800 dark:text-purple-200">
+                        Read-Only
+                      </span>
+                    </div>
+                    <p className="text-[10.5px] text-zinc-500 dark:text-zinc-400">
+                      បានត្រឹមតែមើលព័ត៌មាន (បិទមុខងារបង្កើត កែ និងលុប)
+                    </p>
+                  </div>
+                </div>
+                <LogIn className="w-4 h-4 text-purple-700 dark:text-purple-400 opacity-70 group-hover:opacity-100" />
               </button>
             </div>
           )}

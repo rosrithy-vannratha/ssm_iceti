@@ -133,17 +133,17 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
       {/* Header Bar */}
-      <div className="bg-white rounded-3xl p-6 border border-emerald-900/10 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white dark:bg-[#131f1a] rounded-3xl p-6 border border-emerald-900/10 dark:border-emerald-800/30 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-sm">
-              <BarChart3 className="w-4 h-4 text-emerald-700" />
+            <span className="w-8 h-8 rounded-xl bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 flex items-center justify-center font-bold text-sm">
+              <BarChart3 className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
             </span>
-            <h2 className="text-xl font-bold text-zinc-900">
+            <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">
               ស្ថិតិ & របាយការណ៍សិក្សា (Analytics & AI Reports)
             </h2>
           </div>
-          <p className="text-xs text-zinc-500 mt-1">
+          <p className="text-xs text-zinc-600 dark:text-zinc-300 mt-1 font-medium">
             សរុបទិន្នន័យនិស្សិត វេនសិក្សា អត្រាវត្តមាន និងរបាយការណ៍វិភាគឆ្លាតវៃដោយ AI
           </p>
         </div>
@@ -151,9 +151,9 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
         <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={() => exportStudentsToExcel(students, 'CPI_Full_Report')}
-            className="px-3.5 py-2 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-700 font-semibold text-xs inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+            className="px-3.5 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 font-bold text-xs inline-flex items-center gap-1.5 transition-colors cursor-pointer border border-zinc-200 dark:border-zinc-700"
           >
-            <FileSpreadsheet className="w-3.5 h-3.5 text-zinc-600" />
+            <FileSpreadsheet className="w-3.5 h-3.5 text-zinc-600 dark:text-zinc-400" />
             <span>Export Full Data</span>
           </button>
 
@@ -171,19 +171,19 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
       {/* Top 3 Analytical Summary Blocks */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         {/* Gender Distribution Card */}
-        <div className="bg-white rounded-3xl p-6 border border-emerald-900/10 shadow-xs space-y-4">
+        <div className="bg-white dark:bg-[#131f1a] rounded-3xl p-6 border border-emerald-900/10 dark:border-emerald-800/30 shadow-xs space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="font-bold text-zinc-900 text-sm">សមាមាត្រយេនឌ័រ (Gender)</h3>
-            <Users className="w-4 h-4 text-emerald-700" />
+            <h3 className="font-bold text-zinc-900 dark:text-zinc-100 text-sm">សមាមាត្រយេនឌ័រ (Gender)</h3>
+            <Users className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
           </div>
 
           <div className="space-y-3">
             <div>
               <div className="flex items-center justify-between text-xs mb-1">
-                <span className="font-semibold text-rose-700">និស្សិតស្រី (Female): {femaleStudents} នាក់</span>
-                <span className="font-bold text-rose-800">{femaleRate}%</span>
+                <span className="font-bold text-rose-700 dark:text-rose-400">និស្សិតស្រី (Female): {femaleStudents} នាក់</span>
+                <span className="font-bold text-rose-800 dark:text-rose-300">{femaleRate}%</span>
               </div>
-              <div className="w-full h-2.5 bg-zinc-100 rounded-full overflow-hidden">
+              <div className="w-full h-2.5 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
                 <div
                   className="h-full bg-rose-500 rounded-full transition-all duration-500"
                   style={{ width: `${femaleRate}%` }}
@@ -193,10 +193,10 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
 
             <div>
               <div className="flex items-center justify-between text-xs mb-1">
-                <span className="font-semibold text-blue-700">និស្សិតប្រុស (Male): {maleStudents} នាក់</span>
-                <span className="font-bold text-blue-800">{100 - femaleRate}%</span>
+                <span className="font-bold text-blue-700 dark:text-blue-400">និស្សិតប្រុស (Male): {maleStudents} នាក់</span>
+                <span className="font-bold text-blue-800 dark:text-blue-300">{100 - femaleRate}%</span>
               </div>
-              <div className="w-full h-2.5 bg-zinc-100 rounded-full overflow-hidden">
+              <div className="w-full h-2.5 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
                 <div
                   className="h-full bg-blue-500 rounded-full transition-all duration-500"
                   style={{ width: `${100 - femaleRate}%` }}
@@ -207,70 +207,70 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
         </div>
 
         {/* Shift Distribution Card */}
-        <div className="bg-white rounded-3xl p-6 border border-emerald-900/10 shadow-xs space-y-4">
+        <div className="bg-white dark:bg-[#131f1a] rounded-3xl p-6 border border-emerald-900/10 dark:border-emerald-800/30 shadow-xs space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="font-bold text-zinc-900 text-sm">ការបែងចែកវេន (Shifts)</h3>
-            <Layers className="w-4 h-4 text-emerald-700" />
+            <h3 className="font-bold text-zinc-900 dark:text-zinc-100 text-sm">ការបែងចែកវេន (Shifts)</h3>
+            <Layers className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
           </div>
 
           <div className="grid grid-cols-2 gap-2 text-xs">
-            <div className="p-2.5 rounded-xl bg-amber-50 border border-amber-200/60">
-              <div className="flex items-center gap-1 text-amber-800 font-bold mb-1">
-                <Sun className="w-3.5 h-3.5 text-amber-600" />
+            <div className="p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200/80 dark:border-amber-800/60">
+              <div className="flex items-center gap-1 text-amber-900 dark:text-amber-300 font-bold mb-1">
+                <Sun className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
                 <span>ព្រឹក: {shiftStats.morning}</span>
               </div>
-              <span className="text-[10px] text-amber-600">07:30 - 11:00</span>
+              <span className="text-[10.5px] text-amber-700 dark:text-amber-400 font-semibold">07:30 - 11:00</span>
             </div>
 
-            <div className="p-2.5 rounded-xl bg-orange-50 border border-orange-200/60">
-              <div className="flex items-center gap-1 text-orange-800 font-bold mb-1">
-                <Sunset className="w-3.5 h-3.5 text-orange-600" />
+            <div className="p-2.5 rounded-xl bg-orange-50 dark:bg-orange-950/40 border border-orange-200/80 dark:border-orange-800/60">
+              <div className="flex items-center gap-1 text-orange-900 dark:text-orange-300 font-bold mb-1">
+                <Sunset className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400" />
                 <span>រសៀល: {shiftStats.afternoon}</span>
               </div>
-              <span className="text-[10px] text-orange-600">13:30 - 17:00</span>
+              <span className="text-[10.5px] text-orange-700 dark:text-orange-400 font-semibold">13:30 - 17:00</span>
             </div>
 
-            <div className="p-2.5 rounded-xl bg-indigo-50 border border-indigo-200/60">
-              <div className="flex items-center gap-1 text-indigo-800 font-bold mb-1">
-                <Moon className="w-3.5 h-3.5 text-indigo-600" />
+            <div className="p-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200/80 dark:border-indigo-800/60">
+              <div className="flex items-center gap-1 text-indigo-900 dark:text-indigo-300 font-bold mb-1">
+                <Moon className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
                 <span>យប់: {shiftStats.evening}</span>
               </div>
-              <span className="text-[10px] text-indigo-600">17:30 - 20:30</span>
+              <span className="text-[10.5px] text-indigo-700 dark:text-indigo-400 font-semibold">17:30 - 20:30</span>
             </div>
 
-            <div className="p-2.5 rounded-xl bg-teal-50 border border-teal-200/60">
-              <div className="flex items-center gap-1 text-teal-800 font-bold mb-1">
-                <Calendar className="w-3.5 h-3.5 text-teal-600" />
+            <div className="p-2.5 rounded-xl bg-teal-50 dark:bg-teal-950/40 border border-teal-200/80 dark:border-teal-800/60">
+              <div className="flex items-center gap-1 text-teal-900 dark:text-teal-300 font-bold mb-1">
+                <Calendar className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
                 <span>ចុងសប្តាហ៍: {shiftStats.weekend}</span>
               </div>
-              <span className="text-[10px] text-teal-600">សៅរ៍ - អាទិត្យ</span>
+              <span className="text-[10.5px] text-teal-700 dark:text-teal-400 font-semibold">សៅរ៍ - អាទិត្យ</span>
             </div>
           </div>
         </div>
 
         {/* Academic Overview Card */}
-        <div className="bg-white rounded-3xl p-6 border border-emerald-900/10 shadow-xs space-y-4">
+        <div className="bg-white dark:bg-[#131f1a] rounded-3xl p-6 border border-emerald-900/10 dark:border-emerald-800/30 shadow-xs space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="font-bold text-zinc-900 text-sm">ទិន្នន័យអប់រំទូទៅ</h3>
-            <BookOpen className="w-4 h-4 text-emerald-700" />
+            <h3 className="font-bold text-zinc-900 dark:text-zinc-100 text-sm">ទិន្នន័យអប់រំទូទៅ</h3>
+            <BookOpen className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
           </div>
 
           <div className="space-y-2 text-xs">
-            <div className="flex items-center justify-between py-1.5 border-b border-zinc-100">
-              <span className="text-zinc-500">ជំនាញបណ្តុះបណ្តាល:</span>
-              <span className="font-bold text-zinc-900">{majors.length} ជំនាញ</span>
+            <div className="flex items-center justify-between py-1.5 border-b border-zinc-100 dark:border-zinc-800">
+              <span className="text-zinc-600 dark:text-zinc-400 font-medium">ជំនាញបណ្តុះបណ្តាល:</span>
+              <span className="font-bold text-zinc-900 dark:text-zinc-100">{majors.length} ជំនាញ</span>
             </div>
-            <div className="flex items-center justify-between py-1.5 border-b border-zinc-100">
-              <span className="text-zinc-500">ថ្នាក់រៀនសកម្ម:</span>
-              <span className="font-bold text-zinc-900">{classes.length} ថ្នាក់</span>
+            <div className="flex items-center justify-between py-1.5 border-b border-zinc-100 dark:border-zinc-800">
+              <span className="text-zinc-600 dark:text-zinc-400 font-medium">ថ្នាក់រៀនសកម្ម:</span>
+              <span className="font-bold text-zinc-900 dark:text-zinc-100">{classes.length} ថ្នាក់</span>
             </div>
-            <div className="flex items-center justify-between py-1.5 border-b border-zinc-100">
-              <span className="text-zinc-500">សាស្ត្រាចារ្យបង្រៀន:</span>
-              <span className="font-bold text-emerald-700">{teachers.length} រូប</span>
+            <div className="flex items-center justify-between py-1.5 border-b border-zinc-100 dark:border-zinc-800">
+              <span className="text-zinc-600 dark:text-zinc-400 font-medium">សាស្ត្រាចារ្យបង្រៀន:</span>
+              <span className="font-bold text-emerald-700 dark:text-emerald-300">{teachers.length} រូប</span>
             </div>
             <div className="flex items-center justify-between py-1.5">
-              <span className="text-zinc-500">ឆ្នាំសិក្សា:</span>
-              <span className="font-semibold text-zinc-800">២០២៥-២០២៦</span>
+              <span className="text-zinc-600 dark:text-zinc-400 font-medium">ឆ្នាំសិក្សា:</span>
+              <span className="font-bold text-zinc-900 dark:text-zinc-100">២០២៥-២០២៦</span>
             </div>
           </div>
         </div>
@@ -278,7 +278,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
 
       {/* AI Smart Report Box */}
       <div className="bg-gradient-to-br from-emerald-900 to-emerald-950 text-white rounded-3xl p-6 sm:p-8 shadow-sm space-y-4 relative overflow-hidden">
-        <div className="flex items-center justify-between border-b border-emerald-800 pb-3">
+        <div className="flex items-center justify-between border-b border-emerald-800/80 pb-3">
           <div className="flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-amber-300" />
             <h3 className="font-bold text-base text-white">AI Academic Advisory & Insights</h3>
@@ -286,7 +286,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
           <button
             onClick={handleGenerateAiReport}
             disabled={isAiGenerating}
-            className="text-xs px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-emerald-200 border border-white/10 transition-colors cursor-pointer"
+            className="text-xs font-bold px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-emerald-200 border border-white/20 transition-colors cursor-pointer"
           >
             {isAiGenerating ? 'កំពុងដំណើរការ...' : 'ធ្វើបច្ចុប្បន្នភាព AI'}
           </button>
@@ -299,7 +299,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
         ) : (
           <div className="text-center py-6 space-y-2">
             <Sparkles className="w-8 h-8 text-amber-300 mx-auto opacity-75 animate-bounce" />
-            <p className="text-xs text-emerald-200 max-w-md mx-auto">
+            <p className="text-xs text-emerald-200 max-w-md mx-auto font-medium">
               ចុចប៊ូតុង "ដំណើរការវិភាគ AI" ដើម្បីទទួលបានរបាយការណ៍ស្ទង់មតិទូទៅពីបញ្ញាសិប្បនិម្មិត Gemini។
             </p>
           </div>
@@ -307,22 +307,22 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
       </div>
 
       {/* High Absence Watchlist */}
-      <div className="bg-white rounded-3xl p-6 border border-emerald-900/10 shadow-xs space-y-4">
-        <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
+      <div className="bg-white dark:bg-[#131f1a] rounded-3xl p-6 border border-emerald-900/10 dark:border-emerald-800/30 shadow-xs space-y-4">
+        <div className="flex items-center justify-between pb-3 border-b border-zinc-100 dark:border-zinc-800">
           <div className="flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 text-rose-600" />
-            <h3 className="font-bold text-zinc-900 text-sm">
+            <AlertTriangle className="w-4 h-4 text-rose-600 dark:text-rose-400" />
+            <h3 className="font-bold text-zinc-900 dark:text-zinc-100 text-sm">
               បញ្ជីនិស្សិតមានអវត្តមាន (Absence Watchlist)
             </h3>
           </div>
-          <span className="text-xs text-zinc-500">
+          <span className="text-xs text-zinc-600 dark:text-zinc-400 font-bold">
             សរុប {highAbsenceStudents.length} នាក់
           </span>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-zinc-50 text-zinc-500 font-bold uppercase text-[10.5px]">
+            <thead className="bg-zinc-100/90 dark:bg-[#182620] text-zinc-800 dark:text-zinc-200 font-bold uppercase text-[10.5px]">
               <tr>
                 <th className="py-2.5 px-3">អត្តលេខ</th>
                 <th className="py-2.5 px-3">ឈ្មោះនិស្សិត</th>
@@ -332,39 +332,39 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
                 <th className="py-2.5 px-3">លេខទូរស័ព្ទអាណាព្យាបាល</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-100">
+            <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800/80">
               {highAbsenceStudents.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-8 text-center text-zinc-400">
-                    <CheckCircle2 className="w-6 h-6 text-emerald-600 mx-auto mb-1" />
-                    <p className="font-semibold text-zinc-700">ពុំមាននិស្សិតណាមានអវត្តមានទេ</p>
+                  <td colSpan={6} className="py-8 text-center text-zinc-400 dark:text-zinc-500">
+                    <CheckCircle2 className="w-6 h-6 text-emerald-600 dark:text-emerald-400 mx-auto mb-1" />
+                    <p className="font-bold text-zinc-700 dark:text-zinc-300">ពុំមាននិស្សិតណាមានអវត្តមានទេ</p>
                   </td>
                 </tr>
               ) : (
                 highAbsenceStudents.map((stu) => (
-                  <tr key={stu.id} className="hover:bg-rose-50/40">
-                    <td className="py-2.5 px-3 font-mono font-semibold text-zinc-700">
+                  <tr key={stu.id} className="hover:bg-rose-50/40 dark:hover:bg-rose-950/20">
+                    <td className="py-2.5 px-3 font-mono font-bold text-zinc-800 dark:text-zinc-200">
                       {stu.studentCode}
                     </td>
                     <td className="py-2.5 px-3">
-                      <span className="font-bold text-zinc-900">{stu.nameKhmer}</span>
-                      <span className="text-zinc-400 ml-1">({stu.nameLatin})</span>
+                      <span className="font-bold text-zinc-900 dark:text-zinc-100">{stu.nameKhmer}</span>
+                      <span className="text-zinc-600 dark:text-zinc-400 ml-1 font-medium">({stu.nameLatin})</span>
                     </td>
                     <td className="py-2.5 px-3">
-                      <span className="font-medium text-zinc-700">{stu.className}</span>
-                      <span className="text-zinc-400 text-[10px] block">{getShiftLabel(stu.shift)}</span>
+                      <span className="font-bold text-zinc-800 dark:text-zinc-200">{stu.className}</span>
+                      <span className="text-zinc-500 dark:text-zinc-400 text-[10px] block font-semibold">{getShiftLabel(stu.shift)}</span>
                     </td>
                     <td className="py-2.5 px-3 text-center">
-                      <span className="px-2 py-0.5 rounded-full font-bold bg-rose-100 text-rose-800 text-[10.5px]">
+                      <span className="px-2 py-0.5 rounded-full font-bold bg-rose-100 dark:bg-rose-950/70 text-rose-800 dark:text-rose-300 text-[10.5px]">
                         {stu.absences} ដង
                       </span>
                     </td>
                     <td className="py-2.5 px-3 text-center">
-                      <span className="px-2 py-0.5 rounded-full font-semibold bg-amber-100 text-amber-800 text-[10.5px]">
+                      <span className="px-2 py-0.5 rounded-full font-bold bg-amber-100 dark:bg-amber-950/70 text-amber-800 dark:text-amber-300 text-[10.5px]">
                         {stu.permissions} ដង
                       </span>
                     </td>
-                    <td className="py-2.5 px-3 font-medium text-zinc-600">
+                    <td className="py-2.5 px-3 font-bold text-zinc-700 dark:text-zinc-300">
                       {stu.guardianPhone || stu.phone || '-'}
                     </td>
                   </tr>

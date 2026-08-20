@@ -17,7 +17,9 @@ import {
   CheckCircle,
   Phone,
   BookOpen,
-  GraduationCap
+  GraduationCap,
+  Eye,
+  Lock
 } from 'lucide-react';
 import { Student, Classroom, Major, ShiftType, AcademicYearType, StudentStatus } from '../types';
 import { instituteService } from '../service/instituteService';
@@ -36,6 +38,7 @@ interface StudentsViewProps {
   isAddModalOpen?: boolean;
   onCloseAddModal?: () => void;
   showToast: (text: string, type?: 'success' | 'info' | 'error') => void;
+  isReadOnly?: boolean;
 }
 
 export const StudentsView: React.FC<StudentsViewProps> = ({
@@ -44,7 +47,8 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
   majors,
   isAddModalOpen = false,
   onCloseAddModal,
-  showToast
+  showToast,
+  isReadOnly = false
 }) => {
   const [search, setSearch] = useState('');
   const [selectedShift, setSelectedShift] = useState<string>('all');
@@ -149,6 +153,10 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
   ].filter(Boolean).length;
 
   const handleDeleteAllStudents = async () => {
+    if (isReadOnly) {
+      showToast('គណនីភ្ញៀវមិនអាចលុបទិន្នន័យបានទេ (Read-Only Mode)!', 'info');
+      return;
+    }
     setIsDeletingAll(true);
     try {
       await instituteService.deleteAllStudents();
@@ -163,6 +171,10 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
 
   const handleSaveStudent = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isReadOnly) {
+      showToast('គណនីភ្ញៀវមិនអាចបង្កើត ឬកែប្រែទិន្នន័យបានទេ (Read-Only Mode)!', 'info');
+      return;
+    }
     if (!formNameKhmer.trim()) {
       showToast('សូមបញ្ចូលឈ្មោះខ្មែររបស់និស្សិត!', 'error');
       return;
@@ -207,6 +219,10 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
   };
 
   const handleDeleteStudent = async (id: string, name: string) => {
+    if (isReadOnly) {
+      showToast('គណនីភ្ញៀវមិនអាចលុបទិន្នន័យបានទេ (Read-Only Mode)!', 'info');
+      return;
+    }
     if (window.confirm(`តើអ្នកពិតជាចង់លុបនិស្សិត "${name}" មែនទេ?`)) {
       try {
         await instituteService.deleteStudent(id);
@@ -218,6 +234,10 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (isReadOnly) {
+      showToast('គណនីភ្ញៀវមិនអាច Import ទិន្នន័យបានទេ (Read-Only Mode)!', 'info');
+      return;
+    }
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -377,28 +397,32 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
 
         {/* Actions */}
         <div className="flex flex-wrap items-center gap-2">
-          {/* Delete All Data */}
-          <button
-            onClick={() => setIsDeleteAllModalOpen(true)}
-            disabled={students.length === 0}
-            title="លុបទិន្នន័យនិស្សិតទាំងអស់"
-            className="px-3.5 py-2 rounded-xl bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800/50 font-semibold text-xs inline-flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <Trash2 className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />
-            <span>លុបទិន្នន័យទាំងអស់ (Delete All)</span>
-          </button>
+          {/* Delete All Data - Hidden in Guest mode */}
+          {!isReadOnly && (
+            <button
+              onClick={() => setIsDeleteAllModalOpen(true)}
+              disabled={students.length === 0}
+              title="លុបទិន្នន័យនិស្សិតទាំងអស់"
+              className="px-3.5 py-2 rounded-xl bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800/50 font-semibold text-xs inline-flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Trash2 className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />
+              <span>លុបទិន្នន័យទាំងអស់ (Delete All)</span>
+            </button>
+          )}
 
-          <label className="px-3.5 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 font-semibold text-xs inline-flex items-center gap-1.5 transition-colors cursor-pointer">
-            <Upload className="w-3.5 h-3.5 text-zinc-600 dark:text-zinc-400" />
-            <span>{isImporting ? 'កំពុង Import...' : 'Import Excel'}</span>
-            <input
-              type="file"
-              accept=".xlsx, .xls"
-              onChange={handleFileUpload}
-              className="hidden"
-              disabled={isImporting}
-            />
-          </label>
+          {!isReadOnly ? (
+            <label className="px-3.5 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 font-semibold text-xs inline-flex items-center gap-1.5 transition-colors cursor-pointer">
+              <Upload className="w-3.5 h-3.5 text-zinc-600 dark:text-zinc-400" />
+              <span>{isImporting ? 'កំពុង Import...' : 'Import Excel'}</span>
+              <input
+                type="file"
+                accept=".xlsx, .xls"
+                onChange={handleFileUpload}
+                className="hidden"
+                disabled={isImporting}
+              />
+            </label>
+          ) : null}
 
           <button
             onClick={() => exportStudentsToExcel(filteredStudents)}
@@ -416,13 +440,20 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
             <Download className="w-4 h-4" />
           </button>
 
-          <button
-            onClick={openAddModal}
-            className="px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs inline-flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
-          >
-            <Plus className="w-4 h-4" />
-            <span>+ បន្ថែមនិស្សិតថ្មី</span>
-          </button>
+          {!isReadOnly ? (
+            <button
+              onClick={openAddModal}
+              className="px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs inline-flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
+            >
+              <Plus className="w-4 h-4" />
+              <span>+ បន្ថែមនិស្សិតថ្មី</span>
+            </button>
+          ) : (
+            <div className="px-3 py-2 rounded-xl bg-amber-100 dark:bg-amber-950/50 border border-amber-300/50 dark:border-amber-800/50 text-amber-900 dark:text-amber-200 font-bold text-xs inline-flex items-center gap-1.5">
+              <Lock className="w-3.5 h-3.5" />
+              <span>របៀបភ្ញៀវ (Read-Only)</span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -659,20 +690,33 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
                     {/* Actions */}
                     <td className="py-3 px-4 text-right">
                       <div className="inline-flex items-center gap-1">
-                        <button
-                          onClick={() => openEditModal(stu)}
-                          title="កែប្រែ"
-                          className="p-1.5 rounded-lg text-zinc-500 hover:text-emerald-700 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 transition-colors cursor-pointer"
-                        >
-                          <Edit2 className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteStudent(stu.id, stu.nameKhmer)}
-                          title="លុប"
-                          className="p-1.5 rounded-lg text-zinc-500 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+                        {isReadOnly ? (
+                          <button
+                            onClick={() => openEditModal(stu)}
+                            title="ពិនិត្យមើលព័ត៌មានលម្អិត"
+                            className="px-2.5 py-1 rounded-lg text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 font-semibold text-xs inline-flex items-center gap-1 transition-colors cursor-pointer"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                            <span>ពិនិត្យមើល</span>
+                          </button>
+                        ) : (
+                          <>
+                            <button
+                              onClick={() => openEditModal(stu)}
+                              title="កែប្រែ"
+                              className="p-1.5 rounded-lg text-zinc-500 hover:text-emerald-700 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 transition-colors cursor-pointer"
+                            >
+                              <Edit2 className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteStudent(stu.id, stu.nameKhmer)}
+                              title="លុប"
+                              className="p-1.5 rounded-lg text-zinc-500 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -693,9 +737,16 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
                   <GraduationCap className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-zinc-900 dark:text-zinc-100 text-base">
-                    {editingStudent ? 'កែប្រែព័ត៌មាននិស្សិត' : 'ចុះឈ្មោះនិស្សិតថ្មី (New Student)'}
-                  </h3>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-bold text-zinc-900 dark:text-zinc-100 text-base">
+                      {isReadOnly ? 'ព័ត៌មានលម្អិតនិស្សិត (Student Profile)' : editingStudent ? 'កែប្រែព័ត៌មាននិស្សិត' : 'ចុះឈ្មោះនិស្សិតថ្មី (New Student)'}
+                    </h3>
+                    {isReadOnly && (
+                      <span className="px-2 py-0.5 rounded-md bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 text-[10px] font-bold">
+                        Read-Only
+                      </span>
+                    )}
+                  </div>
                   <p className="text-xs text-zinc-500 dark:text-zinc-400">
                     វិទ្យាស្ថានគរុកោសល្យភាសាចិនក្នុងតំបន់ (International Chinese Education and Teachers Institute)
                   </p>
@@ -897,14 +948,16 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
                   onClick={closeModal}
                   className="px-4 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 font-semibold cursor-pointer"
                 >
-                  បោះបង់ (Cancel)
+                  {isReadOnly ? 'បិទ (Close)' : 'បោះបង់ (Cancel)'}
                 </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold shadow-xs cursor-pointer"
-                >
-                  {editingStudent ? 'រក្សាទុកការកែប្រែ' : 'ចុះឈ្មោះនិស្សិត'}
-                </button>
+                {!isReadOnly && (
+                  <button
+                    type="submit"
+                    className="px-5 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold shadow-xs cursor-pointer"
+                  >
+                    {editingStudent ? 'រក្សាទុកការកែប្រែ' : 'ចុះឈ្មោះនិស្សិត'}
+                  </button>
+                )}
               </div>
             </form>
           </div>

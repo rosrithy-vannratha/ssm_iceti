@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   GraduationCap,
   Users,
@@ -15,9 +15,13 @@ import {
   Sun,
   Sunset,
   Moon,
-  Calendar
+  Calendar,
+  RefreshCw,
+  CheckCircle,
+  WifiOff
 } from 'lucide-react';
 import { ActiveTab, AppUser } from '../types';
+import { subscribeSyncInfo, SyncInfo, instituteService } from '../service/instituteService';
 
 interface NavbarProps {
   activeTab: ActiveTab;
@@ -42,6 +46,28 @@ export const Navbar: React.FC<NavbarProps> = ({
   onToggleDarkMode,
   onOpenBackup
 }) => {
+  const [syncInfo, setSyncInfo] = useState<SyncInfo>({
+    status: 'synced',
+    lastSyncedAt: new Date(),
+    message: 'Cloud Sync Active'
+  });
+  const [isManualSyncing, setIsManualSyncing] = useState(false);
+
+  useEffect(() => {
+    const unsub = subscribeSyncInfo((info) => setSyncInfo(info));
+    return () => unsub();
+  }, []);
+
+  const handleManualSync = async () => {
+    if (isManualSyncing) return;
+    setIsManualSyncing(true);
+    try {
+      await instituteService.forceSyncAll();
+    } finally {
+      setIsManualSyncing(false);
+    }
+  };
+
   const tabs = [
     { id: 'dashboard', labelKh: 'ផ្ទាំងគ្រប់គ្រង', labelEn: 'Dashboard', icon: BarChart3 },
     { id: 'students', labelKh: 'និស្សិត', labelEn: 'Students', icon: Users, badge: totalStudents },
@@ -86,6 +112,47 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
 
             <div className="flex items-center gap-2">
+              {/* Real-time Sync Status Pill */}
+              <div
+                title={syncInfo.message || (syncInfo.status === 'synced' ? 'ទិន្នន័យបានធ្វើសមកាលកម្មស្វ័យប្រវត្តិលើ Cloud Firestore' : 'កំពុងធ្វើសមកាលកម្មទិន្នន័យ...')}
+                className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium border bg-emerald-950/70 dark:bg-black/50 border-emerald-700/40 text-emerald-200"
+              >
+                {syncInfo.status === 'syncing' || isManualSyncing ? (
+                  <>
+                    <RefreshCw className="w-3 h-3 text-emerald-300 animate-spin" />
+                    <span className="text-emerald-300">កំពុង Sync...</span>
+                  </>
+                ) : syncInfo.status === 'offline' ? (
+                  <>
+                    <span className="w-2 h-2 rounded-full bg-amber-400"></span>
+                    <span className="text-amber-300">Offline Cache</span>
+                  </>
+                ) : syncInfo.status === 'error' ? (
+                  <>
+                    <span className="w-2 h-2 rounded-full bg-rose-400"></span>
+                    <span className="text-rose-300">Sync Error</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
+                    </span>
+                    <span className="text-emerald-200">Real-Time Sync</span>
+                  </>
+                )}
+
+                <button
+                  type="button"
+                  onClick={handleManualSync}
+                  title="ចុចដើម្បីទាញទិន្នន័យចុងក្រោយបង្អស់ពី Cloud ឡើងវិញ"
+                  disabled={isManualSyncing}
+                  className="ml-0.5 p-0.5 hover:text-white rounded transition-colors cursor-pointer disabled:opacity-50"
+                >
+                  <RefreshCw className={`w-2.5 h-2.5 ${isManualSyncing ? 'animate-spin' : ''}`} />
+                </button>
+              </div>
+
               {/* Cloud Backup Hub Button */}
               <button
                 type="button"
@@ -109,21 +176,39 @@ export const Navbar: React.FC<NavbarProps> = ({
 
               {user ? (
                 <div className="flex items-center gap-2 bg-white/10 px-2.5 py-1 rounded-full border border-white/20">
-                  {user.photoURL ? (
-                    <img
-                      src={user.photoURL}
-                      alt={user.displayName || 'User'}
-                      referrerPolicy="no-referrer"
-                      className="w-5 h-5 rounded-full object-cover border border-white/40"
-                    />
-                  ) : (
-                    <div className="w-5 h-5 rounded-full bg-emerald-700 text-white text-[10px] font-bold flex items-center justify-center">
-                      {(user.displayName || user.email || 'U').charAt(0).toUpperCase()}
+                  {user.role === 'Guest' || user.isAnonymous ? (
+                    <div className="flex items-center gap-1.5">
+                      <span className="px-2 py-0.5 rounded-full bg-amber-400 text-zinc-950 font-black text-[10px] uppercase tracking-wider flex items-center gap-1">
+                        <span>👁️ ភ្ញៀវ (Guest)</span>
+                      </span>
+                      <button
+                        type="button"
+                        onClick={onLogin}
+                        className="text-[10.5px] font-bold text-emerald-200 hover:text-white underline ml-1 cursor-pointer"
+                        title="ចូលគណនីដើម្បីទទួលបានសិទ្ធិពេញលេញ"
+                      >
+                        ចូលគណនី
+                      </button>
                     </div>
+                  ) : (
+                    <>
+                      {user.photoURL ? (
+                        <img
+                          src={user.photoURL}
+                          alt={user.displayName || 'User'}
+                          referrerPolicy="no-referrer"
+                          className="w-5 h-5 rounded-full object-cover border border-white/40"
+                        />
+                      ) : (
+                        <div className="w-5 h-5 rounded-full bg-emerald-700 text-white text-[10px] font-bold flex items-center justify-center">
+                          {(user.displayName || user.email || 'U').charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                      <span className="text-white text-xs font-medium max-w-[100px] truncate hidden md:inline">
+                        {user.displayName || user.email}
+                      </span>
+                    </>
                   )}
-                  <span className="text-white text-xs font-medium max-w-[100px] truncate hidden md:inline">
-                    {user.displayName || user.email}
-                  </span>
                   <button
                     onClick={onLogout}
                     title="ចាកចេញ (Sign Out)"

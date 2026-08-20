@@ -14,7 +14,8 @@ import {
   Users,
   Search,
   Filter,
-  Check
+  Check,
+  Lock
 } from 'lucide-react';
 import { Student, Classroom, AttendanceRecord, AttendanceStatus, ShiftType } from '../types';
 import { instituteService } from '../service/instituteService';
@@ -25,13 +26,15 @@ interface AttendanceViewProps {
   classes: Classroom[];
   attendance: AttendanceRecord[];
   showToast: (text: string, type?: 'success' | 'info' | 'error') => void;
+  isReadOnly?: boolean;
 }
 
 export const AttendanceView: React.FC<AttendanceViewProps> = ({
   students,
   classes,
   attendance,
-  showToast
+  showToast,
+  isReadOnly = false
 }) => {
   const [selectedDate, setSelectedDate] = useState<string>(
     new Date().toISOString().split('T')[0]
@@ -123,6 +126,10 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
 
   // Update single student attendance status
   const handleSetStatus = (studentId: string, status: AttendanceStatus) => {
+    if (isReadOnly) {
+      showToast('គណនីភ្ញៀវមិនអាចកែប្រែវត្តមានបានទេ (Read-Only Mode)!', 'info');
+      return;
+    }
     setAttendanceDraft((prev) => ({
       ...prev,
       [studentId]: {
@@ -134,6 +141,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
 
   // Update note
   const handleSetNote = (studentId: string, note: string) => {
+    if (isReadOnly) return;
     setAttendanceDraft((prev) => ({
       ...prev,
       [studentId]: {
@@ -145,6 +153,10 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
 
   // Mark all students as present
   const handleMarkAllPresent = () => {
+    if (isReadOnly) {
+      showToast('គណនីភ្ញៀវមិនអាចកែប្រែវត្តមានបានទេ (Read-Only Mode)!', 'info');
+      return;
+    }
     const updated: Record<string, { status: AttendanceStatus; note: string }> = {};
     classStudents.forEach((stu) => {
       updated[stu.id] = {
@@ -158,6 +170,10 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
 
   // Save attendance batch to Firestore / service
   const handleSaveAttendance = async () => {
+    if (isReadOnly) {
+      showToast('គណនីភ្ញៀវមិនអាចរក្សាទុកទិន្នន័យបានទេ (Read-Only Mode)!', 'info');
+      return;
+    }
     if (classStudents.length === 0) {
       showToast('មិនមាននិស្សិតដើម្បីរក្សាទុកវត្តមានទេ', 'info');
       return;
@@ -256,13 +272,15 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
 
         {/* Action buttons */}
         <div className="flex flex-wrap items-center gap-2">
-          <button
-            onClick={handleMarkAllPresent}
-            className="px-3.5 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 font-semibold text-xs inline-flex items-center gap-1.5 transition-colors cursor-pointer"
-          >
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-            <span>វត្តមានទាំងអស់ (All Present)</span>
-          </button>
+          {!isReadOnly && (
+            <button
+              onClick={handleMarkAllPresent}
+              className="px-3.5 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 font-semibold text-xs inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+            >
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+              <span>វត្តមានទាំងអស់ (All Present)</span>
+            </button>
+          )}
 
           <button
             onClick={handleExportAttendance}
@@ -272,14 +290,21 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
             <span>Export Excel</span>
           </button>
 
-          <button
-            onClick={handleSaveAttendance}
-            disabled={isSaving}
-            className="px-5 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs inline-flex items-center gap-2 shadow-xs transition-all cursor-pointer disabled:opacity-50"
-          >
-            <Save className="w-4 h-4" />
-            <span>{isSaving ? 'កំពុងរក្សាទុក...' : 'រក្សាទុកវត្តមាន'}</span>
-          </button>
+          {!isReadOnly ? (
+            <button
+              onClick={handleSaveAttendance}
+              disabled={isSaving}
+              className="px-5 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs inline-flex items-center gap-2 shadow-xs transition-all cursor-pointer disabled:opacity-50"
+            >
+              <Save className="w-4 h-4" />
+              <span>{isSaving ? 'កំពុងរក្សាទុក...' : 'រក្សាទុកវត្តមាន'}</span>
+            </button>
+          ) : (
+            <div className="px-3.5 py-2 rounded-xl bg-amber-100 dark:bg-amber-950/50 border border-amber-300/50 dark:border-amber-800/50 text-amber-900 dark:text-amber-200 font-bold text-xs inline-flex items-center gap-1.5">
+              <Lock className="w-3.5 h-3.5" />
+              <span>របៀបភ្ញៀវ (Read-Only)</span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -455,12 +480,13 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                           {/* Present Button */}
                           <button
                             type="button"
+                            disabled={isReadOnly}
                             onClick={() => handleSetStatus(stu.id, 'present')}
-                            className={`px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1 transition-all cursor-pointer ${
+                            className={`px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1 transition-all ${
                               draft.status === 'present'
                                 ? 'bg-emerald-600 text-white shadow-xs'
                                 : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 hover:text-emerald-700 dark:hover:text-emerald-300'
-                            }`}
+                            } ${isReadOnly ? 'cursor-default opacity-90' : 'cursor-pointer'}`}
                           >
                             <CheckCircle2 className="w-3.5 h-3.5" />
                             <span>វត្តមាន</span>
@@ -469,12 +495,13 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                           {/* Permission Button */}
                           <button
                             type="button"
+                            disabled={isReadOnly}
                             onClick={() => handleSetStatus(stu.id, 'permission')}
-                            className={`px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1 transition-all cursor-pointer ${
+                            className={`px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1 transition-all ${
                               draft.status === 'permission'
                                 ? 'bg-amber-600 text-white shadow-xs'
                                 : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-amber-50 dark:hover:bg-amber-950/50 hover:text-amber-700 dark:hover:text-amber-300'
-                            }`}
+                            } ${isReadOnly ? 'cursor-default opacity-90' : 'cursor-pointer'}`}
                           >
                             <Clock className="w-3.5 h-3.5" />
                             <span>សុំច្បាប់</span>
@@ -483,12 +510,13 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                           {/* Absent Button */}
                           <button
                             type="button"
+                            disabled={isReadOnly}
                             onClick={() => handleSetStatus(stu.id, 'absent')}
-                            className={`px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1 transition-all cursor-pointer ${
+                            className={`px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1 transition-all ${
                               draft.status === 'absent'
                                 ? 'bg-rose-600 text-white shadow-xs'
                                 : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-rose-50 dark:hover:bg-rose-950/50 hover:text-rose-700 dark:hover:text-rose-300'
-                            }`}
+                            } ${isReadOnly ? 'cursor-default opacity-90' : 'cursor-pointer'}`}
                           >
                             <XCircle className="w-3.5 h-3.5" />
                             <span>អវត្តមាន</span>
@@ -497,12 +525,13 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                           {/* Late Button */}
                           <button
                             type="button"
+                            disabled={isReadOnly}
                             onClick={() => handleSetStatus(stu.id, 'late')}
-                            className={`px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1 transition-all cursor-pointer ${
+                            className={`px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1 transition-all ${
                               draft.status === 'late'
                                 ? 'bg-blue-600 text-white shadow-xs'
                                 : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-blue-50 dark:hover:bg-blue-950/50 hover:text-blue-700 dark:hover:text-blue-300'
-                            }`}
+                            } ${isReadOnly ? 'cursor-default opacity-90' : 'cursor-pointer'}`}
                           >
                             <Clock className="w-3.5 h-3.5" />
                             <span>យឺត</span>
@@ -514,10 +543,11 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                       <td className="py-3 px-4">
                         <input
                           type="text"
+                          disabled={isReadOnly}
                           value={draft.note}
                           onChange={(e) => handleSetNote(stu.id, e.target.value)}
-                          placeholder="មូលហេតុ (ឧ. មានធុរៈគ្រួសារ, ឈឺ...)"
-                          className="w-full px-2.5 py-1.5 bg-zinc-50 dark:bg-[#182620] border border-zinc-200 dark:border-zinc-700/80 rounded-lg text-xs text-zinc-800 dark:text-zinc-200 focus:bg-white dark:focus:bg-[#1c2e26] focus:border-emerald-500 outline-hidden"
+                          placeholder={isReadOnly ? 'គ្មានមូលហេតុ' : 'មូលហេតុ (ឧ. មានធុរៈគ្រួសារ, ឈឺ...)'}
+                          className="w-full px-2.5 py-1.5 bg-zinc-50 dark:bg-[#182620] border border-zinc-200 dark:border-zinc-700/80 rounded-lg text-xs text-zinc-800 dark:text-zinc-200 focus:bg-white dark:focus:bg-[#1c2e26] focus:border-emerald-500 outline-hidden disabled:opacity-75 disabled:cursor-not-allowed"
                         />
                       </td>
                     </tr>

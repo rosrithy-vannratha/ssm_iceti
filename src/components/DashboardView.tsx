@@ -28,6 +28,7 @@ interface DashboardViewProps {
   setActiveTab: (tab: ActiveTab) => void;
   onOpenAddStudent: () => void;
   onOpenAddClass: () => void;
+  isReadOnly?: boolean;
 }
 
 export const DashboardView: React.FC<DashboardViewProps> = ({
@@ -38,7 +39,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   attendance,
   setActiveTab,
   onOpenAddStudent,
-  onOpenAddClass
+  onOpenAddClass,
+  isReadOnly = false
 }) => {
   const [aiInsightLoading, setAiInsightLoading] = useState(false);
   const [aiInsight, setAiInsight] = useState<string | null>(null);
@@ -99,6 +101,28 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
+      {/* Guest Explorer Mode Notification */}
+      {isReadOnly && (
+        <div className="bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-amber-500 text-white flex items-center justify-center font-bold text-sm shrink-0">
+              👁️
+            </div>
+            <div>
+              <h4 className="font-bold text-xs text-amber-900 dark:text-amber-200">
+                របៀបភ្ញៀវ (Explore as Guest — Read-Only Mode)
+              </h4>
+              <p className="text-[11px] text-amber-800/90 dark:text-amber-300/80 mt-0.5">
+                លោកអ្នកកំពុងស្ថិតក្នុងរបៀបពិនិត្យទិន្នន័យ។ មុខងារបង្កើត កែប្រែ ឬលុបទិន្នន័យត្រូវបានចាក់សោសុវត្ថិភាព។
+              </p>
+            </div>
+          </div>
+          <span className="px-2.5 py-1 rounded-full bg-amber-200/70 dark:bg-amber-900/60 text-amber-900 dark:text-amber-200 text-[10px] font-black uppercase tracking-wider">
+            បានតែមើលប៉ុណ្ណោះ
+          </span>
+        </div>
+      )}
+
       {/* Welcome & Quick Action Bar */}
       <div className="bg-gradient-to-r from-emerald-800 to-emerald-900 text-white rounded-3xl p-6 sm:p-8 shadow-sm relative overflow-hidden">
         <div className="absolute right-0 top-0 w-80 h-80 bg-white/5 rounded-full blur-3xl pointer-events-none" />
@@ -123,14 +147,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               className="px-4 py-2.5 rounded-xl bg-white text-emerald-900 hover:bg-emerald-50 font-bold text-xs inline-flex items-center gap-2 shadow-xs transition-all cursor-pointer"
             >
               <CalendarCheck className="w-4 h-4 text-emerald-700" />
-              <span>កត់ត្រាវត្តមានថ្ងៃនេះ</span>
+              <span>{isReadOnly ? 'ពិនិត្យវត្តមានថ្ងៃនេះ' : 'កត់ត្រាវត្តមានថ្ងៃនេះ'}</span>
             </button>
             <button
-              onClick={onOpenAddStudent}
+              onClick={() => setActiveTab('students')}
               className="px-4 py-2.5 rounded-xl bg-emerald-700/80 hover:bg-emerald-600 border border-emerald-500/30 text-white font-semibold text-xs inline-flex items-center gap-2 transition-all cursor-pointer"
             >
               <Users className="w-4 h-4" />
-              <span>+ បន្ថែមនិស្សិតថ្មី</span>
+              <span>{isReadOnly ? 'ពិនិត្យបញ្ជីនិស្សិត' : '+ បន្ថែមនិស្សិតថ្មី'}</span>
             </button>
           </div>
         </div>

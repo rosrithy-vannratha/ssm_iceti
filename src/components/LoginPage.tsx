@@ -382,18 +382,28 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                   </form>
                 )}
 
-                <div className="mt-6 pt-4 border-t border-zinc-100 dark:border-zinc-800 flex flex-col sm:flex-row items-center justify-between gap-3">
-                  <span className="text-[11px] text-zinc-500 dark:text-zinc-400">
-                    ចង់ស្វែងយល់មុខងារជាមុនសិន?
-                  </span>
-                  <button
-                    type="button"
-                    onClick={onContinueAsGuest}
-                    className="px-3.5 py-1.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 font-bold text-xs inline-flex items-center gap-1.5 transition-colors cursor-pointer"
-                  >
-                    <span>ចូលមើលជាភ្ញៀវ (Explore as Guest)</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </button>
+                <div className="mt-6 pt-4 border-t border-zinc-100 dark:border-zinc-800 space-y-2.5">
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-zinc-50 dark:bg-zinc-900/90 border border-zinc-200 dark:border-zinc-800 p-3 rounded-2xl">
+                    <div className="text-left">
+                      <div className="flex items-center gap-1.5 text-xs font-bold text-zinc-900 dark:text-zinc-100">
+                        <span>ចូលមើលជាភ្ញៀវ (Explore as Guest)</span>
+                        <span className="px-1.5 py-0.5 rounded-md bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 text-[10px] font-bold">
+                          Read-Only
+                        </span>
+                      </div>
+                      <p className="text-[10.5px] text-zinc-500 dark:text-zinc-400 mt-0.5">
+                        ត្រឹមតែពិនិត្យមើលព័ត៌មាន និងរបាយការណ៍ (បិទមុខងារបង្កើត កែ និងលុប)
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={onContinueAsGuest}
+                      className="w-full sm:w-auto px-3.5 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs inline-flex items-center justify-center gap-1.5 transition-colors cursor-pointer shrink-0 shadow-xs"
+                    >
+                      <span>ចូលទស្សនា (Explore)</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
