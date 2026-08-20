@@ -1,5 +1,12 @@
 @import "tailwindcss";
 
+/* Make dark: utility classes respond to the app's manual dark-mode toggle
+   (the .dark class on <html>) instead of only the OS-level color scheme.
+   Without this, dark:text-* / dark:bg-* classes never activate when the
+   in-app switch is used on a device that's set to light mode, which is
+   what causes text to become unreadable in dark mode. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @layer base {
   :root {
     --primary: #059669;

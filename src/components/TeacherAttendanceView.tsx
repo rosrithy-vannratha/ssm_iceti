@@ -40,7 +40,7 @@ export const TeacherAttendanceView: React.FC<TeacherAttendanceViewProps> = ({
 
   // Active teachers
   const activeTeachers = useMemo(() => {
-    return teachers.filter((t) => t.status === 'active');
+    return teachers.filter((t) => !t.status || t.status.toLowerCase() === 'active');
   }, [teachers]);
 
   // Load existing records for this date & shift

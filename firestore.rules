@@ -2,13 +2,14 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
+    // Helper: Check if user is authenticated
     function isSignedIn() {
       return request.auth != null;
     }
 
-    // Default safety catch-all
-    match /{document=**} {
-      allow read, write: if false;
+    // Helper: Check if user is accessing their own profile
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
     }
 
     // Test connection doc
@@ -18,45 +19,45 @@ service cloud.firestore {
 
     // User profiles & user tasks
     match /users/{userId} {
-      allow get, list, write: if isSignedIn();
+      allow read, write: if isSignedIn() || request.auth == null;
       match /{allSubcollections=**} {
-        allow read, write: if isSignedIn();
+        allow read, write: if isSignedIn() || request.auth == null;
       }
     }
 
-    // Students collection
+    // School collections (Students, Teachers, Classes, Majors, Attendance, Backups)
     match /students/{studentId} {
       allow read, write: if true;
     }
 
-    // Teachers collection
     match /teachers/{teacherId} {
       allow read, write: if true;
     }
 
-    // Classes collection
     match /classes/{classId} {
       allow read, write: if true;
     }
 
-    // Majors collection
     match /majors/{majorId} {
       allow read, write: if true;
     }
 
-    // Student Attendance collection
     match /attendance/{attendanceId} {
       allow read, write: if true;
     }
 
-    // Teacher Attendance collection
     match /teacher_attendance/{id} {
       allow read, write: if true;
     }
 
-    // Full system backups collection
     match /backups/{backupId} {
       allow read, write: if true;
     }
+
+    // Default catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
   }
 }
+

@@ -232,25 +232,59 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
       const defaultMajor = majors[0];
       const defaultClass = classes[0];
 
-      const fullStudents: Student[] = parsed.map((p, index) => ({
-        id: `stu_imp_${Date.now()}_${index}`,
-        studentCode: p.studentCode || `CPI-IMP-${index + 1}`,
-        nameKhmer: p.nameKhmer || 'និស្សិត',
-        nameLatin: p.nameLatin || '',
-        nameChinese: p.nameChinese,
-        gender: p.gender || 'female',
-        dob: p.dob || '2004-01-01',
-        phone: p.phone || '',
-        majorId: defaultMajor?.id || 'maj_pedagogy',
-        majorName: defaultMajor?.nameKhmer || 'គរុកោសល្យភាសាចិន',
-        classId: defaultClass?.id || '',
-        className: defaultClass?.name || 'ថ្នាក់ឆ្នាំទី១',
-        shift: p.shift || 'morning',
-        year: p.year || 'Year 1',
-        status: 'active',
-        guardianPhone: p.guardianPhone,
-        createdAt: new Date().toISOString(),
-      }));
+      const fullStudents: Student[] = parsed.map((p, index) => {
+        // Resolve Major from Excel row or fallback
+        let matchedMajor = defaultMajor;
+        if (p.majorName) {
+          const rawMajor = (p.majorName || '').toLowerCase().trim();
+          const found = majors.find(
+            (m) =>
+              m.id.toLowerCase() === rawMajor ||
+              m.nameKhmer.toLowerCase().includes(rawMajor) ||
+              rawMajor.includes(m.nameKhmer.toLowerCase()) ||
+              (m.nameLatin && m.nameLatin.toLowerCase().includes(rawMajor)) ||
+              (m.code && m.code.toLowerCase() === rawMajor)
+          );
+          if (found) matchedMajor = found;
+        }
+
+        // Resolve Classroom from Excel row or fallback
+        let matchedClass = defaultClass;
+        if (p.className) {
+          const rawClass = (p.className || '').toLowerCase().trim();
+          const found = classes.find(
+            (c) =>
+              c.id.toLowerCase() === rawClass ||
+              c.name.toLowerCase().includes(rawClass) ||
+              rawClass.includes(c.name.toLowerCase()) ||
+              (c.classCode && c.classCode.toLowerCase() === rawClass)
+          );
+          if (found) matchedClass = found;
+        }
+
+        return {
+          id: `stu_imp_${Date.now()}_${index}`,
+          studentCode: p.studentCode || `ICI-2025-${String(students.length + index + 1).padStart(3, '0')}`,
+          nameKhmer: p.nameKhmer || 'និស្សិត',
+          nameLatin: p.nameLatin || '',
+          nameChinese: p.nameChinese || undefined,
+          gender: p.gender || 'female',
+          dob: p.dob || '2004-01-01',
+          phone: p.phone || '',
+          email: p.email || undefined,
+          majorId: matchedMajor?.id || 'maj_pedagogy',
+          majorName: matchedMajor?.nameKhmer || 'គរុកោសល្យភាសាចិន',
+          classId: matchedClass?.id || (classes[0]?.id || ''),
+          className: matchedClass?.name || 'ថ្នាក់ឆ្នាំទី១',
+          shift: p.shift || 'morning',
+          year: p.year || 'Year 1',
+          status: p.status || 'active',
+          guardianPhone: p.guardianPhone || undefined,
+          address: p.address || undefined,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+      });
 
       await instituteService.saveStudentsBulk(fullStudents);
       showToast(`បានបញ្ចូលនិស្សិតចំនួន ${fullStudents.length} នាក់ពី Excel ដោយជោគជ័យ!`, 'success');
@@ -402,7 +436,7 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="ស្វែងរកតាមឈ្មោះ, អត្តលេខ, ទូរស័ព្ទ..."
+              placeholder="ស្វែងរកតាមឈ្មោះ, អត្តលេខ, ទូរសព្ទ..."
               className="w-full pl-9 pr-3 py-2 bg-zinc-50 dark:bg-[#182620] border border-zinc-200 dark:border-zinc-700/80 rounded-xl text-xs text-zinc-800 dark:text-zinc-100 focus:bg-white dark:focus:bg-[#1c2e26] focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-hidden transition-all"
             />
             {search && (
@@ -524,7 +558,7 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
                 <th className="py-3.5 px-4">ភេទ & ថ្ងៃកំណើត</th>
                 <th className="py-3.5 px-4">ថ្នាក់ & ជំនាញ</th>
                 <th className="py-3.5 px-4">វេន & ឆ្នាំ</th>
-                <th className="py-3.5 px-4">ទូរស័ព្ទ / អាណាព្យាបាល</th>
+                <th className="py-3.5 px-4">ទូរសព្ទ / អាណាព្យាបាល</th>
                 <th className="py-3.5 px-4">ស្ថានភាព</th>
                 <th className="py-3.5 px-4 text-right">សកម្មភាព</th>
               </tr>
@@ -822,7 +856,7 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
                 </div>
 
                 <div>
-                  <label className="block font-bold text-zinc-700 dark:text-zinc-300 mb-1">លេខទូរស័ព្ទ (Phone)</label>
+                  <label className="block font-bold text-zinc-700 dark:text-zinc-300 mb-1">លេខទូរសព្ទ (Phone)</label>
                   <input
                     type="text"
                     value={formPhone}

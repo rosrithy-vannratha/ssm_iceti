@@ -36,9 +36,8 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
   const [selectedDate, setSelectedDate] = useState<string>(
     new Date().toISOString().split('T')[0]
   );
-  const [selectedClassId, setSelectedClassId] = useState<string>(
-    classes[0]?.id || ''
-  );
+  const [selectedClassId, setSelectedClassId] = useState<string>('all');
+  const [selectedShift, setSelectedShift] = useState<string>('all');
   const [search, setSearch] = useState('');
 
   // Local editing state for attendance on this date & class
@@ -48,21 +47,58 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
   >({});
   const [isSaving, setIsSaving] = useState(false);
 
-  const selectedClass = classes.find((c) => c.id === selectedClassId) || classes[0];
+  // Auto-sync selected class if invalid
+  React.useEffect(() => {
+    if (selectedClassId !== 'all' && classes.length > 0) {
+      const exists = classes.some((c) => c.id === selectedClassId);
+      if (!exists) {
+        setSelectedClassId('all');
+      }
+    }
+  }, [classes, selectedClassId]);
 
-  // Students belonging to selected class
+  const selectedClass = useMemo(() => {
+    if (selectedClassId === 'all') return null;
+    return classes.find((c) => c.id === selectedClassId) || null;
+  }, [classes, selectedClassId]);
+
+  // Students belonging to selected class / all classes
   const classStudents = useMemo(() => {
-    if (!selectedClassId) return [];
-    return students.filter((s) => s.classId === selectedClassId && s.status === 'active');
-  }, [students, selectedClassId]);
+    return students.filter((s) => {
+      // 1. Active status check (treat undefined or 'active' as active)
+      const isActive = !s.status || s.status.toLowerCase() === 'active';
+      if (!isActive) return false;
+
+      // 2. Class check
+      if (selectedClassId !== 'all') {
+        if (selectedClass) {
+          const matchId = s.classId === selectedClass.id;
+          const matchCode = Boolean(selectedClass.classCode && s.classId === selectedClass.classCode);
+          const matchName = Boolean(
+            s.className &&
+              (s.className.toLowerCase() === selectedClass.name.toLowerCase() ||
+                selectedClass.name.toLowerCase().includes(s.className.toLowerCase()) ||
+                s.className.toLowerCase().includes(selectedClass.name.toLowerCase()))
+          );
+          if (!matchId && !matchCode && !matchName) return false;
+        } else {
+          if (s.classId !== selectedClassId) return false;
+        }
+      }
+
+      // 3. Shift check
+      if (selectedShift !== 'all') {
+        const studentShift = (s.shift || (selectedClass ? selectedClass.shift : 'morning')).toLowerCase();
+        if (studentShift !== selectedShift.toLowerCase()) return false;
+      }
+
+      return true;
+    });
+  }, [students, selectedClassId, selectedClass, selectedShift]);
 
   // Load existing attendance records for the selectedDate & selectedClassId
   React.useEffect(() => {
-    if (!selectedClassId) return;
-
-    const existingForDay = attendance.filter(
-      (a) => a.date === selectedDate && a.classId === selectedClassId
-    );
+    const existingForDay = attendance.filter((a) => a.date === selectedDate);
 
     const draftMap: Record<string, { status: AttendanceStatus; note: string }> = {};
 
@@ -83,15 +119,15 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
     });
 
     setAttendanceDraft(draftMap);
-  }, [selectedDate, selectedClassId, classStudents, attendance]);
+  }, [selectedDate, selectedClassId, selectedShift, classStudents, attendance]);
 
   // Update single student attendance status
   const handleSetStatus = (studentId: string, status: AttendanceStatus) => {
     setAttendanceDraft((prev) => ({
       ...prev,
       [studentId]: {
-        ...prev[studentId],
-        status
+        status,
+        note: prev[studentId]?.note || ''
       }
     }));
   };
@@ -101,7 +137,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
     setAttendanceDraft((prev) => ({
       ...prev,
       [studentId]: {
-        ...prev[studentId],
+        status: prev[studentId]?.status || 'present',
         note
       }
     }));
@@ -122,19 +158,24 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
 
   // Save attendance batch to Firestore / service
   const handleSaveAttendance = async () => {
-    if (!selectedClass) return;
+    if (classStudents.length === 0) {
+      showToast('មិនមាននិស្សិតដើម្បីរក្សាទុកវត្តមានទេ', 'info');
+      return;
+    }
     setIsSaving(true);
 
     try {
       const recordsToSave: AttendanceRecord[] = classStudents.map((stu) => {
         const draft = attendanceDraft[stu.id] || { status: 'present', note: '' };
+        const assignedClassId = stu.classId || (selectedClass ? selectedClass.id : classes[0]?.id || 'general');
+        const assignedShift = stu.shift || (selectedClass ? selectedClass.shift : 'morning');
         return {
-          id: `att_${selectedDate}_${selectedClass.id}_${stu.id}`,
+          id: `att_${selectedDate}_${assignedClassId}_${stu.id}`,
           date: selectedDate,
-          classId: selectedClass.id,
-          shift: selectedClass.shift,
+          classId: assignedClassId,
+          shift: assignedShift,
           studentId: stu.id,
-          studentName: stu.nameKhmer,
+          studentName: stu.nameKhmer || stu.nameLatin || 'និស្សិត',
           status: draft.status,
           note: draft.note.trim() || undefined,
           createdAt: new Date().toISOString()
@@ -142,7 +183,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
       });
 
       await instituteService.saveAttendanceBatch(recordsToSave);
-      showToast('បានរក្សាទុកវត្តមានប្រចាំថ្ងៃដោយជោគជ័យ!', 'success');
+      showToast(`បានរក្សាទុកវត្តមានចំនួន ${recordsToSave.length} នាក់ដោយជោគជ័យ!`, 'success');
     } catch (e) {
       console.error(e);
       showToast('បរាជ័យក្នុងការរក្សាទុកវត្តមាន', 'error');
@@ -153,22 +194,28 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
 
   // Export today's attendance
   const handleExportAttendance = () => {
-    if (!selectedClass) return;
+    if (classStudents.length === 0) {
+      showToast('មិនមានទិន្នន័យដើម្បី Export', 'info');
+      return;
+    }
     const currentRecords: AttendanceRecord[] = classStudents.map((stu) => {
       const draft = attendanceDraft[stu.id] || { status: 'present', note: '' };
+      const assignedClassId = stu.classId || (selectedClass ? selectedClass.id : 'general');
+      const assignedShift = stu.shift || (selectedClass ? selectedClass.shift : 'morning');
       return {
-        id: `att_${selectedDate}_${selectedClass.id}_${stu.id}`,
+        id: `att_${selectedDate}_${assignedClassId}_${stu.id}`,
         date: selectedDate,
-        classId: selectedClass.id,
-        shift: selectedClass.shift,
+        classId: assignedClassId,
+        shift: assignedShift,
         studentId: stu.id,
-        studentName: stu.nameKhmer,
+        studentName: stu.nameKhmer || stu.nameLatin || 'និស្សិត',
         status: draft.status,
         note: draft.note.trim() || undefined,
         createdAt: new Date().toISOString()
       };
     });
-    exportAttendanceToExcel(currentRecords, selectedClass.name, selectedDate);
+    const titleName = selectedClass ? selectedClass.name : 'គ្រប់ថ្នាក់ទាំងអស់';
+    exportAttendanceToExcel(currentRecords, titleName, selectedDate);
   };
 
   // Filtered by local search query
@@ -238,7 +285,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
 
       {/* Select Class & Date Controls */}
       <div className="bg-white dark:bg-[#131f1a] rounded-2xl p-4 border border-emerald-900/10 dark:border-emerald-800/30 shadow-xs space-y-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Class Selector */}
           <div>
             <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
@@ -249,11 +296,32 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
               onChange={(e) => setSelectedClassId(e.target.value)}
               className="w-full px-3 py-2 bg-zinc-50 dark:bg-[#182620] border border-zinc-200 dark:border-zinc-700/80 rounded-xl text-xs font-semibold text-zinc-800 dark:text-zinc-100 focus:bg-white dark:focus:bg-[#1c2e26] focus:border-emerald-500 outline-hidden cursor-pointer"
             >
+              <option value="all" className="dark:bg-[#131f1a]">
+                ⚡ គ្រប់ថ្នាក់ទាំងអស់ (All Classes) - {students.length} នាក់
+              </option>
               {classes.map((c) => (
                 <option key={c.id} value={c.id} className="dark:bg-[#131f1a]">
                   {c.name} ({getShiftLabel(c.shift)}) - {c.room}
                 </option>
               ))}
+            </select>
+          </div>
+
+          {/* Shift Filter */}
+          <div>
+            <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
+              វេនសិក្សា (Shift)
+            </label>
+            <select
+              value={selectedShift}
+              onChange={(e) => setSelectedShift(e.target.value)}
+              className="w-full px-3 py-2 bg-zinc-50 dark:bg-[#182620] border border-zinc-200 dark:border-zinc-700/80 rounded-xl text-xs font-semibold text-zinc-800 dark:text-zinc-100 focus:bg-white dark:focus:bg-[#1c2e26] focus:border-emerald-500 outline-hidden cursor-pointer"
+            >
+              <option value="all" className="dark:bg-[#131f1a]">គ្រប់វេនទាំងអស់ (All Shifts)</option>
+              <option value="morning" className="dark:bg-[#131f1a]">ព្រឹក (Morning)</option>
+              <option value="afternoon" className="dark:bg-[#131f1a]">រសៀល (Afternoon)</option>
+              <option value="evening" className="dark:bg-[#131f1a]">យប់ (Evening)</option>
+              <option value="weekend" className="dark:bg-[#131f1a]">ចុងសប្តាហ៍ (Weekend)</option>
             </select>
           </div>
 
@@ -273,7 +341,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
           {/* Local Search */}
           <div>
             <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
-              ស្វែងរកឈ្មោះនិស្សិតក្នុងថ្នាក់
+              ស្វែងរកឈ្មោះ / អត្តលេខ
             </label>
             <div className="relative">
               <Search className="w-3.5 h-3.5 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -288,34 +356,40 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
           </div>
         </div>
 
-        {/* Selected Class info badge & Stat counters */}
-        {selectedClass && (
-          <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800 flex flex-wrap items-center justify-between gap-3 text-xs">
-            <div className="flex items-center gap-2">
-              <span className="font-bold text-zinc-800 dark:text-zinc-100">{selectedClass.name}</span>
-              <span className="text-zinc-400">•</span>
-              <span className="text-emerald-700 dark:text-emerald-400 font-semibold">{selectedClass.majorName}</span>
-              <span className="text-zinc-400">•</span>
-              <span className="text-zinc-500 dark:text-zinc-400 font-medium">{selectedClass.room}</span>
-            </div>
-
-            {/* Quick Stat Pills */}
-            <div className="flex items-center gap-2">
-              <span className="px-2 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 font-bold text-[11px]">
-                វត្តមាន (P): {presentCount}
-              </span>
-              <span className="px-2 py-0.5 rounded-md bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 font-bold text-[11px]">
-                សុំច្បាប់ (E): {permissionCount}
-              </span>
-              <span className="px-2 py-0.5 rounded-md bg-rose-100 dark:bg-rose-950/80 text-rose-800 dark:text-rose-300 font-bold text-[11px]">
-                អវត្តមាន (A): {absentCount}
-              </span>
-              <span className="px-2 py-0.5 rounded-md bg-blue-100 dark:bg-blue-950/80 text-blue-800 dark:text-blue-300 font-bold text-[11px]">
-                មកយឺត (L): {lateCount}
-              </span>
-            </div>
+        {/* Info badge & Stat counters */}
+        <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800 flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2">
+            <span className="font-bold text-zinc-800 dark:text-zinc-100">
+              {selectedClass ? selectedClass.name : 'គ្រប់ថ្នាក់ទាំងអស់ (All Classes)'}
+            </span>
+            <span className="text-zinc-400">•</span>
+            <span className="text-emerald-700 dark:text-emerald-400 font-semibold">
+              សរុប {classStudents.length} នាក់
+            </span>
+            {selectedClass && (
+              <>
+                <span className="text-zinc-400">•</span>
+                <span className="text-zinc-500 dark:text-zinc-400 font-medium">{selectedClass.room}</span>
+              </>
+            )}
           </div>
-        )}
+
+          {/* Quick Stat Pills */}
+          <div className="flex items-center gap-2">
+            <span className="px-2 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 font-bold text-[11px]">
+              វត្តមាន (P): {presentCount}
+            </span>
+            <span className="px-2 py-0.5 rounded-md bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 font-bold text-[11px]">
+              សុំច្បាប់ (E): {permissionCount}
+            </span>
+            <span className="px-2 py-0.5 rounded-md bg-rose-100 dark:bg-rose-950/80 text-rose-800 dark:text-rose-300 font-bold text-[11px]">
+              អវត្តមាន (A): {absentCount}
+            </span>
+            <span className="px-2 py-0.5 rounded-md bg-blue-100 dark:bg-blue-950/80 text-blue-800 dark:text-blue-300 font-bold text-[11px]">
+              មកយឺត (L): {lateCount}
+            </span>
+          </div>
+        </div>
       </div>
 
       {/* Attendance Table */}
@@ -327,6 +401,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                 <th className="py-3 px-4 w-12 text-center">ល.រ</th>
                 <th className="py-3 px-4">អត្តលេខ</th>
                 <th className="py-3 px-4">ឈ្មោះនិស្សិត (Khmer / Latin)</th>
+                <th className="py-3 px-4">ថ្នាក់ / វេនសិក្សា</th>
                 <th className="py-3 px-4 text-center">ស្ថានភាពវត្តមាន (Status)</th>
                 <th className="py-3 px-4">កំណត់ចំណាំ / មូលហេតុសុំច្បាប់ (Notes)</th>
               </tr>
@@ -334,15 +409,19 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
             <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
               {filteredClassStudents.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="py-12 text-center text-zinc-400">
+                  <td colSpan={6} className="py-12 text-center text-zinc-400">
                     <Users className="w-8 h-8 text-zinc-300 dark:text-zinc-600 mx-auto mb-2" />
-                    <p className="font-semibold text-zinc-600 dark:text-zinc-300">ពុំមាននិស្សិតក្នុងថ្នាក់នេះទេ</p>
-                    <p className="text-[11px]">សូមជ្រើសរើសថ្នាក់រៀនផ្សេង ឬបញ្ចូលនិស្សិតថ្មីទៅក្នុងថ្នាក់នេះ</p>
+                    <p className="font-semibold text-zinc-600 dark:text-zinc-300">ពុំមាននិស្សិតក្នុងលក្ខខណ្ឌជ្រើសរើសនេះទេ</p>
+                    <p className="text-[11px]">សូមជ្រើសរើស "គ្រប់ថ្នាក់ទាំងអស់" ឬថ្នាក់រៀនផ្សេង</p>
                   </td>
                 </tr>
               ) : (
                 filteredClassStudents.map((stu, index) => {
                   const draft = attendanceDraft[stu.id] || { status: 'present', note: '' };
+                  const studentClass = classes.find((c) => c.id === stu.classId);
+                  const classNameDisplay = stu.className || studentClass?.name || 'ថ្នាក់ទូទៅ';
+                  const shiftDisplay = stu.shift || studentClass?.shift || 'morning';
+
                   return (
                     <tr key={stu.id} className="hover:bg-zinc-50/80 dark:hover:bg-[#182620]/60 transition-colors">
                       {/* Index */}
@@ -361,6 +440,13 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                         <div className="text-[11px] text-zinc-400 font-medium">
                           {stu.nameLatin} {stu.nameChinese && `• ${stu.nameChinese}`}
                         </div>
+                      </td>
+
+                      {/* Class & Shift badge */}
+                      <td className="py-3 px-4">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 font-medium text-[11px]">
+                          {classNameDisplay} ({getShiftLabel(shiftDisplay as ShiftType)})
+                        </span>
                       </td>
 
                       {/* Attendance Toggle Buttons */}
