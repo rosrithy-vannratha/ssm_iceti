@@ -157,6 +157,7 @@ export default function App() {
               uid: 'guest-' + Date.now(),
               displayName: 'ភ្ញៀវ (Guest)',
               email: 'guest@ici.edu.kh',
+              photoURL: null,
               role: 'Guest',
               isAnonymous: true,
             });

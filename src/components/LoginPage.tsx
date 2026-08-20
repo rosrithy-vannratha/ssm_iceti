@@ -10,13 +10,15 @@ import {
   Moon,
   BookOpen,
   Users,
-  CalendarCheck
+  CalendarCheck,
+  ArrowRight
 } from 'lucide-react';
 import { AppUser } from '../types';
 import { authService } from '../service/instituteService';
 
 interface LoginPageProps {
   onSuccess: (user: AppUser) => void;
+  onContinueAsGuest: () => void;
   showToast: (text: string, type?: 'success' | 'info' | 'error') => void;
   isDarkMode: boolean;
   onToggleDarkMode: () => void;
@@ -24,6 +26,7 @@ interface LoginPageProps {
 
 export const LoginPage: React.FC<LoginPageProps> = ({
   onSuccess,
+  onContinueAsGuest,
   showToast,
   isDarkMode,
   onToggleDarkMode
@@ -379,7 +382,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                   </form>
                 )}
 
-                {/*
                 <div className="mt-6 pt-4 border-t border-zinc-100 dark:border-zinc-800 flex flex-col sm:flex-row items-center justify-between gap-3">
                   <span className="text-[11px] text-zinc-500 dark:text-zinc-400">
                     ចង់ស្វែងយល់មុខងារជាមុនសិន?
@@ -393,7 +395,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                     <ArrowRight className="w-3.5 h-3.5" />
                   </button>
                 </div>
-                */}
               </div>
             </div>
           </div>
