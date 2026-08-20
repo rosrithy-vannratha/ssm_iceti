@@ -1,17 +1,13 @@
 import React, { useState } from 'react';
 import {
   LogIn,
-  Mail,
   Lock,
   User,
-  ShieldCheck,
   GraduationCap,
   Sparkles,
-  UserCheck,
   AlertCircle,
   Sun,
   Moon,
-  ArrowRight,
   BookOpen,
   Users,
   CalendarCheck
@@ -21,7 +17,6 @@ import { authService } from '../service/instituteService';
 
 interface LoginPageProps {
   onSuccess: (user: AppUser) => void;
-  onContinueAsGuest: () => void;
   showToast: (text: string, type?: 'success' | 'info' | 'error') => void;
   isDarkMode: boolean;
   onToggleDarkMode: () => void;
@@ -29,44 +24,16 @@ interface LoginPageProps {
 
 export const LoginPage: React.FC<LoginPageProps> = ({
   onSuccess,
-  onContinueAsGuest,
   showToast,
   isDarkMode,
   onToggleDarkMode
 }) => {
-  const [activeTab, setActiveTab] = useState<'quick' | 'google' | 'email'>('email');
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Form inputs
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-
-  const handleGoogleLogin = async () => {
-    setIsLoading(true);
-    setErrorMessage(null);
-    try {
-      const user = await authService.signInWithGoogle();
-      showToast(`សូមស្វាគមន៍, ${user.displayName || 'អ្នកប្រើប្រាស់'}!`, 'success');
-      onSuccess(user);
-    } catch (err: any) {
-      console.error('Google Sign-in Error:', err);
-      let msg = 'មិនអាចចូលគណនីជាមួយ Google បានទេ';
-      if (err.code === 'auth/popup-blocked') {
-        msg = 'Browser បានបិទផ្ទាំង Popup។ សូមអនុញ្ញាត Popups ឬប្រើការចូលរហ័ស (Quick Login)។';
-      } else if (err.code === 'auth/unauthorized-domain') {
-        msg = 'Domain នេះមិនទាន់ត្រូវបានបញ្ចូលក្នុង Firebase Authorized Domains ទេ។ សូមប្រើ Quick Access ឬ Email Login។';
-      } else if (err.code === 'auth/popup-closed-by-user') {
-        msg = 'ផ្ទាំងចូលគណនីត្រូវបានបិទមុនពេលបញ្ចប់។';
-      } else if (err.message) {
-        msg = err.message;
-      }
-      setErrorMessage(msg);
-      showToast(msg, 'error');
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handlePasswordLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,19 +61,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({
       const msg = 'ឈ្មោះអ្នកប្រើប្រាស់ ឬពាក្យសម្ងាត់មិនត្រឹមត្រូវទេ!';
       setErrorMessage(msg);
       showToast(msg, 'error');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleQuickLogin = (role: string, name: string, userEmail: string) => {
-    setIsLoading(true);
-    try {
-      const user = authService.signInQuick(name, role, userEmail);
-      showToast(`សូមស្វាគមន៍, ${name}! (${role})`, 'success');
-      onSuccess(user);
-    } catch (err: any) {
-      showToast('មិនអាចចូលគណនីបានទេ', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -211,54 +165,11 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                 </p>
               </div>
 
-              {/* Navigation Tabs */}
-              <div className="grid grid-cols-3 border-b border-zinc-100 dark:border-zinc-800 p-1.5 bg-zinc-50 dark:bg-[#0d1612]">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setActiveTab('quick');
-                    setErrorMessage(null);
-                  }}
-                  className={`py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                    activeTab === 'quick'
-                      ? 'bg-white dark:bg-[#182820] text-emerald-800 dark:text-emerald-300 shadow-xs border border-zinc-200/60 dark:border-emerald-800/40'
-                      : 'text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200'
-                  }`}
-                >
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>ចូលរហ័ស (Quick)</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setActiveTab('google');
-                    setErrorMessage(null);
-                  }}
-                  className={`py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                    activeTab === 'google'
-                      ? 'bg-white dark:bg-[#182820] text-emerald-800 dark:text-emerald-300 shadow-xs border border-zinc-200/60 dark:border-emerald-800/40'
-                      : 'text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200'
-                  }`}
-                >
-                  <span>Google Login</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setActiveTab('email');
-                    setErrorMessage(null);
-                  }}
-                  className={`py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                    activeTab === 'email'
-                      ? 'bg-white dark:bg-[#182820] text-emerald-800 dark:text-emerald-300 shadow-xs border border-zinc-200/60 dark:border-emerald-800/40'
-                      : 'text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200'
-                  }`}
-                >
+              <div className="border-b border-zinc-100 dark:border-zinc-800 px-6 py-3 bg-zinc-50 dark:bg-[#0d1612] text-center">
+                <span className="text-xs font-bold text-emerald-800 dark:text-emerald-300 inline-flex items-center gap-1.5">
                   <Lock className="w-3.5 h-3.5" />
-                  <span>ពាក្យសម្ងាត់ (Password)</span>
-                </button>
+                  ឈ្មោះអ្នកប្រើប្រាស់ និងពាក្យសម្ងាត់ (Username &amp; Password)
+                </span>
               </div>
 
               {/* Error Alert */}
@@ -273,14 +184,14 @@ export const LoginPage: React.FC<LoginPageProps> = ({
 
               {/* Tab Contents */}
               <div className="p-6">
-                {/* 1. QUICK DEMO ACCESS */}
-                {activeTab === 'quick' && (
+                {/*
+                {false && (
                   <div className="space-y-3">
                     <p className="text-xs text-zinc-600 dark:text-zinc-400 mb-1">
                       ចុចលើតួនាទីណាមួយខាងក្រោមដើម្បីចូលប្រើប្រព័ន្ធភ្លាមៗដោយពុំចាំបាច់វាយពាក្យសម្ងាត់៖
                     </p>
 
-                    {/* Admin */}
+                    { /* Admin * / }
                     <button
                       type="button"
                       onClick={() =>
@@ -308,7 +219,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                       <LogIn className="w-4 h-4 text-emerald-700 dark:text-emerald-400 opacity-70 group-hover:opacity-100 transition-opacity" />
                     </button>
 
-                    {/* Teacher / Faculty */}
+                    { /* Teacher / Faculty * / }
                     <button
                       type="button"
                       onClick={() =>
@@ -336,7 +247,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                       <LogIn className="w-4 h-4 text-blue-700 dark:text-blue-400 opacity-70 group-hover:opacity-100 transition-opacity" />
                     </button>
 
-                    {/* Registrar Staff */}
+                    { /* Registrar Staff * / }
                     <button
                       type="button"
                       onClick={() =>
@@ -366,8 +277,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                   </div>
                 )}
 
-                {/* 2. GOOGLE LOGIN */}
-                {activeTab === 'google' && (
+                { /* Google login * / }
+                {false && (
                   <div className="space-y-4 text-center py-2">
                     <p className="text-xs text-zinc-600 dark:text-zinc-400">
                       ចូលប្រើប្រាស់ដោយផ្ទាល់ជាមួយគណនី Google ឬ Gmail ផ្លូវការរបស់អ្នកដើម្បីធ្វើសមកាលកម្មទិន្នន័យលើ Cloud
@@ -412,8 +323,10 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                   </div>
                 )}
 
-                {/* 3. USERNAME / PASSWORD */}
-                {activeTab === 'email' && (
+                */}
+
+                {/* USERNAME / PASSWORD */}
+                {true && (
                   <form onSubmit={handlePasswordLogin} className="space-y-3.5">
                     <div>
                       <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1">
@@ -466,7 +379,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                   </form>
                 )}
 
-                {/* Continue as Guest option */}
+                {/*
                 <div className="mt-6 pt-4 border-t border-zinc-100 dark:border-zinc-800 flex flex-col sm:flex-row items-center justify-between gap-3">
                   <span className="text-[11px] text-zinc-500 dark:text-zinc-400">
                     ចង់ស្វែងយល់មុខងារជាមុនសិន?
@@ -480,6 +393,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                     <ArrowRight className="w-3.5 h-3.5" />
                   </button>
                 </div>
+                */}
               </div>
             </div>
           </div>
